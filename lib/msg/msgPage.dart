@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lite_chat/msg/model/msgTxt.dart';
 
 import '../constant.dart';
 
@@ -30,7 +31,11 @@ class MsgPageState extends State<MsgPageRoute> {
   void initState() {
     super.initState();
     platformNativeCall.setMethodCallHandler((call) {
-      print('收到一条新消息：${call.toString()}');
+      if ('receiveTxtMsg' == call.method) {
+        final msg = msgTxtFromJson(call.arguments);
+        print('收到一条新消息：${msg.txt}');
+      }
+
       return Future.value(666);
     });
   }

@@ -8,6 +8,7 @@ import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessage;
 import com.rightpoint.lite_chat.MainActivity;
+import com.rightpoint.lite_chat.resolve_msg.ResolveMsg;
 
 import java.util.List;
 
@@ -71,7 +72,21 @@ public class ChannelMsg {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        methodChannel.invokeMethod("receiveTxtMsg", messages.get(0).toString());
+                        for (EMMessage message : messages) {
+                            switch (message.getType()) {
+                                case TXT: {
+                                    methodChannel.invokeMethod("receiveTxtMsg",
+                                            ResolveMsg.resolveTxt(message));
+
+                                    break;
+                                }
+                                case IMAGE: {
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
                     }
                 });
             }
