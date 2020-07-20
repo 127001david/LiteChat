@@ -4,29 +4,31 @@
 
 import 'dart:convert';
 
+import 'package:lite_chat/msg/model/baseMsg.dart';
+
 MsgTxt msgTxtFromJson(String str) => MsgTxt.fromJson(json.decode(str));
 
 String msgTxtToJson(MsgTxt data) => json.encode(data.toJson());
 
-class MsgTxt {
+class MsgTxt implements BaseMsg {
   MsgTxt({
-    this.form,
+    this.from,
     this.to,
     this.txt,
   });
 
-  String form;
+  String from;
   String to;
   String txt;
 
   factory MsgTxt.fromJson(Map<String, dynamic> json) => MsgTxt(
-        form: json["form"],
+        from: json["from"],
         to: json["to"],
         txt: json["txt"],
       );
 
   Map<String, dynamic> toJson() => {
-        "form": form,
+        "from": from,
         "to": to,
         "txt": txt,
       };

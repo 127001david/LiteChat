@@ -11,7 +11,7 @@ import com.hyphenate.chat.EMTextMessageBody;
 public class ResolveMsg {
     public static String resolveTxt(EMMessage msg) {
         StringBuilder sb = new StringBuilder("{");
-        sb.append("\"form\":\"").append(msg.getFrom()).append("\",");
+        sb.append("\"from\":\"").append(msg.getFrom()).append("\",");
         sb.append("\"to\":\"").append(msg.getTo()).append("\",");
         sb.append("\"txt\":\"").append(((EMTextMessageBody) msg.getBody()).getMessage()).append("\"}");
 

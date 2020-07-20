@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:lite_chat/msg/model/msgTxt.dart';
 
 import '../constant.dart';
+import 'model/baseMsg.dart';
 
 class MsgPageRoute extends StatefulWidget {
   MsgPageRoute({Key key, this.username}) : super(key: key);
@@ -24,6 +25,7 @@ class MsgPageState extends State<MsgPageRoute> {
   MsgPageState(this.username);
 
   final String username;
+  final List<MsgContainer> msgList = [];
 
   TextEditingController _msgTextFieldController = TextEditingController();
 
@@ -34,6 +36,9 @@ class MsgPageState extends State<MsgPageRoute> {
       if ('receiveTxtMsg' == call.method) {
         final msg = msgTxtFromJson(call.arguments);
         print('收到一条新消息：${msg.txt}');
+        MsgContainer baseMsg = MsgContainer(msg_type.txt, msg);
+        msgList.insert(0, baseMsg);
+        setState(() {});
       }
 
       return Future.value(666);
@@ -53,7 +58,30 @@ class MsgPageState extends State<MsgPageRoute> {
         children: <Widget>[
           Expanded(
             child: DecoratedBox(
-              child: ListView(),
+              child: ListView.builder(
+                  reverse: true,
+                  itemCount: msgList.length,
+                  itemBuilder: (context, index) {
+                    if (msg_type.txt == msgList[index].msgType) {
+                      MsgTxt msgTxt = msgList[index].msg as MsgTxt;
+                      if (username == msgTxt.from) {
+                        return Row(
+                          children: <Widget>[
+                            Text((msgList[index].msg as MsgTxt).txt),
+                          ],
+                        );
+                      } else {
+                        return Row(
+                          textDirection: TextDirection.rtl,
+                          children: <Widget>[
+                            Text((msgList[index].msg as MsgTxt).txt),
+                          ],
+                        );
+                      }
+                    }
+
+                    return ListTile();
+                  }),
               decoration:
                   BoxDecoration(color: Color.fromARGB(255, 237, 237, 237)),
             ),
@@ -148,6 +176,12 @@ class MsgPageState extends State<MsgPageRoute> {
     try {
       await channelCallNative
           .invokeMethod('sendTxt', {'txt': msg, 'username': username});
+
+      MsgTxt msgTxt = MsgTxt(to: username, txt: msg);
+
+      MsgContainer baseMsg = MsgContainer(msg_type.txt, msgTxt);
+
+      msgList.insert(0, baseMsg);
 
       print(msg);
 
