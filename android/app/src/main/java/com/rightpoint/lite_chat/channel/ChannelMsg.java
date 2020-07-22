@@ -1,17 +1,21 @@
 package com.rightpoint.lite_chat.channel;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
-import com.hyphenate.EMMessageListener;
-import com.hyphenate.chat.EMClient;
-import com.hyphenate.chat.EMMessage;
+import com.rightpoint.lite_chat.IM.IMsgReceiver;
+import com.rightpoint.lite_chat.IM.IMsgSender;
+import com.rightpoint.lite_chat.IM.huanxin.HXReceiver;
+import com.rightpoint.lite_chat.IM.huanxin.HXSender;
 import com.rightpoint.lite_chat.MainActivity;
-import com.rightpoint.lite_chat.resolve_msg.ResolveMsg;
 
-import java.util.List;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
 
+import io.flutter.app.FlutterActivity;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
@@ -26,6 +30,11 @@ public class ChannelMsg {
 
     public static void connect(MainActivity activity) {
         receiveMsg(activity);
+        resolveSendMsg(activity);
+    }
+
+    private static void resolveSendMsg(MainActivity activity) {
+        IMsgSender sender = new HXSender();
 
         new MethodChannel(activity.getFlutterView(), CHANNEL_CALL_NATIVE).setMethodCallHandler(new MethodChannel.MethodCallHandler() {
             @Override
@@ -40,14 +49,7 @@ public class ChannelMsg {
                         return;
                     }
 
-                    assert txt != null;
-                    assert username != null;
-
-                    EMMessage message = EMMessage.createTxtSendMessage(txt, username);
-                    if (!TextUtils.isEmpty(isGroup)) {
-                        message.setChatType(EMMessage.ChatType.GroupChat);
-                    }
-                    EMClient.getInstance().chatManager().sendMessage(message);
+                    sender.sendTxt(username, !TextUtils.isEmpty(isGroup), txt);
 
                     activity.runOnUiThread(new Runnable() {
                         @Override
@@ -62,60 +64,44 @@ public class ChannelMsg {
 
     private static void receiveMsg(MainActivity activity) {
         MethodChannel methodChannel = new MethodChannel(activity.getFlutterView(),
-                CHANNEL_NATIVE_CALL);
+                ChannelMsg.CHANNEL_NATIVE_CALL);
 
-        EMMessageListener msgListener = new EMMessageListener() {
+        IMsgReceiver msgReceiver = new HXReceiver();
 
+        msgReceiver.registerMsgListener(new IMsgReceiver.MsgReceiverListener() {
             @Override
-            public void onMessageReceived(List<EMMessage> messages) {
-                //收到消息
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (EMMessage message : messages) {
-                            switch (message.getType()) {
-                                case TXT: {
-                                    methodChannel.invokeMethod("receiveTxtMsg",
-                                            ResolveMsg.resolveTxt(message));
+            public void receiveTxt(String from, String txt) {
+                Map<String, String> msg = new HashMap<>(2);
 
-                                    break;
-                                }
-                                case IMAGE: {
-                                    break;
-                                }
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                });
+                msg.put("from", from);
+                msg.put("txt", txt);
+
+                methodChannel.invokeMethod("receiveTxtMsg", msg);
             }
 
             @Override
-            public void onCmdMessageReceived(List<EMMessage> messages) {
-                //收到透传消息
+            public void receiveImg(String from, boolean original, Uri thumbUri, Uri imgUri) {
+
             }
 
             @Override
-            public void onMessageRead(List<EMMessage> messages) {
-                //收到已读回执
+            public void receiveVoice(String from, int length, Uri voiceUri) {
+
             }
 
             @Override
-            public void onMessageDelivered(List<EMMessage> message) {
-                //收到已送达回执
+            public void receiveVideo(String from, int length, Uri thumbUri, Uri videoUri) {
+
             }
 
             @Override
-            public void onMessageRecalled(List<EMMessage> messages) {
-                //消息被撤回
-            }
+            public void receiveFile(String from, Uri fileUri) {
 
-            @Override
-            public void onMessageChanged(EMMessage message, Object change) {
-                //消息状态变动
             }
-        };
-        EMClient.getInstance().chatManager().addMessageListener(msgListener);
+        });
+
+        WeakReference<FlutterActivity> reference = new WeakReference<>(activity);
+
+        msgReceiver.startListening(reference);
     }
 }
