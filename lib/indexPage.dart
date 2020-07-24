@@ -29,11 +29,10 @@ class IndexState extends State<IndexPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: ConstrainedBox(
-      constraints: BoxConstraints.expand(),
+        body: Container(
       child: Stack(
         children: <Widget>[
-          ConstrainedBox(
+          Container(
               constraints: BoxConstraints.expand(),
               child: Image.asset(
                 'assets/LiteChatOpen.jpeg',
@@ -53,7 +52,7 @@ class IndexState extends State<IndexPage> {
                     },
                   ),
                 )
-              : Spacer(),
+              : Container(),
           _needLogin
               ? Positioned(
                   right: 28.0,
@@ -68,7 +67,7 @@ class IndexState extends State<IndexPage> {
                     },
                   ),
                 )
-              : Spacer(),
+              : Container(),
         ],
       ),
     ));
@@ -81,9 +80,7 @@ class IndexState extends State<IndexPage> {
       username = await channelCallNative.invokeMethod('checkLogin');
 
       print('login success');
-    } on PlatformException catch (e) {
-
-    }
+    } on PlatformException catch (e) {}
 
     if (null == username) {
       _needLogin = true;

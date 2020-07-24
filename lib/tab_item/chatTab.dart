@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/conversation.dart';
 import 'package:lite_chat/msg/msgPage.dart';
@@ -30,8 +31,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
 
     bus.on(null, (e) {
       final msg = e as Map;
-      if ('type_txt' == msg['type']) {
-      }
+      if ('type_txt' == msg['type']) {}
 
       setState(() {});
     });
@@ -40,10 +40,12 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
   @override
   Widget build(BuildContext context) {
     Widget divider = Container(
-      height: 0.2,
-      color: Colors.grey[400],
+      height: 0.7,
+      color: Color.fromARGB(255, 229, 229, 229),
       margin: EdgeInsets.only(left: 67),
     );
+
+    var format = intl.DateFormat('HH:mm');
 
     return Center(
       child: ListView.separated(
@@ -74,7 +76,42 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
                     ),
                   ),
                 ),
-                Text(_conversations[index]['username'])
+                Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          textDirection: TextDirection.rtl,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.only(right: 14),
+                              child: Text(
+                                  format.format(
+                                      DateTime.fromMicrosecondsSinceEpoch(
+                                          _conversations[index]['time'])),
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color:
+                                          Color.fromARGB(255, 178, 178, 178))),
+                            ),
+                            Expanded(
+                                flex: 1,
+                                child: Text(
+                                  _conversations[index]['username'],
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Color.fromARGB(255, 25, 25, 25)),
+                                )),
+                          ],
+                        ),
+                        Text(_conversations[index]['txt'],
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Color.fromARGB(255, 178, 178, 178)))
+                      ],
+                    ))
               ],
             ),
           );
