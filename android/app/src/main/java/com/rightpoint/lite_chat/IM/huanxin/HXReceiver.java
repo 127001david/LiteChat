@@ -5,8 +5,7 @@ import androidx.annotation.NonNull;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessage;
-import com.hyphenate.chat.EMTextMessageBody;
-import com.rightpoint.lite_chat.IM.IMsgReceiver;
+import com.rightpoint.lite_chat.IM.BaseMsgReceiver;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -18,7 +17,7 @@ import io.flutter.app.FlutterActivity;
  * @author Wonder Wei
  * Create date：2020/7/22 1:35 PM 
  */
-public class HXReceiver extends IMsgReceiver {
+public class HXReceiver extends BaseMsgReceiver {
 
     @Override
     public void startListening(@NonNull WeakReference<FlutterActivity> activityReference) {
@@ -41,19 +40,7 @@ public class HXReceiver extends IMsgReceiver {
                     @Override
                     public void run() {
                         for (EMMessage message : messages) {
-                            switch (message.getType()) {
-                                case TXT: {
-                                    listener.receiveTxt(message.getFrom(),
-                                            ((EMTextMessageBody) message.getBody()).getMessage());
-
-                                    break;
-                                }
-                                case IMAGE: {
-                                    break;
-                                }
-                                default:
-                                    break;
-                            }
+                            listener.receive(ResolveMsg.resolveMsg(message));
                         }
                     }
                 });

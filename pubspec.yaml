@@ -54,6 +54,8 @@ flutter:
     - assets/laba.png
     - assets/emoji.png
     - assets/more_panel.png
+    - assets/white_bubble.png
+    - assets/yellow_bubble.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

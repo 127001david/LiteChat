@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lite_chat/friends/add.dart';
+import 'package:lite_chat/msg/event_bus.dart';
 
+import 'constant.dart';
 import 'tab_item/baseTab.dart';
 import 'tab_item/chatTab.dart';
 import 'tab_item/friendsTab.dart';
@@ -14,11 +17,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
+  static const platformNativeCall =
+      const MethodChannel(Constant.channel_receive_msg);
+
   List<BaseTabWidget> _tabViews = [
     ChatTabWidget(),
-    FriendsTabWidget(
-      key: UniqueKey(),
-    ),
+    FriendsTabWidget(),
     NewWorldTabWidget(),
     MyTabWidget()
   ];
@@ -32,6 +36,13 @@ class _MyHomePageState extends State<MyHomePage>
   void initState() {
     super.initState();
     _pageController = PageController();
+
+    platformNativeCall.setMethodCallHandler((call) {
+      final msg = call.arguments as Map;
+      bus.emit(msg['from'], msg);
+
+      return Future.value(666);
+    });
   }
 
   @override

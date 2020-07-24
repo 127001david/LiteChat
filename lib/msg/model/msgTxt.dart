@@ -1,14 +1,21 @@
-// To parse this JSON data, do
-//
-//     final msgTxt = msgTxtFromJson(jsonString);
-
 import 'dart:convert';
 
 import 'package:lite_chat/msg/model/baseMsg.dart';
 
-MsgTxt msgTxtFromJson(String str) => MsgTxt.fromJson(json.decode(str));
+MsgTxt msgTxtFromMap(Map msg) {
+  MsgTxt msgTxt = MsgTxt(from: msg['from'], txt: msg['txt']);
+  return msgTxt;
+}
 
-String msgTxtToJson(MsgTxt data) => json.encode(data.toJson());
+Map msgTxtToMap(MsgTxt data) {
+  Map msg = Map();
+
+  msg['from'] = data.from;
+  msg['to'] = data.to;
+  msg['txt'] = data.txt;
+
+  return msg;
+}
 
 class MsgTxt implements BaseMsg {
   MsgTxt({
@@ -20,16 +27,4 @@ class MsgTxt implements BaseMsg {
   String from;
   String to;
   String txt;
-
-  factory MsgTxt.fromJson(Map<String, dynamic> json) => MsgTxt(
-        from: json["from"],
-        to: json["to"],
-        txt: json["txt"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "from": from,
-        "to": to,
-        "txt": txt,
-      };
 }

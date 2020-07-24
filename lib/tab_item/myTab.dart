@@ -27,7 +27,7 @@ class MyTabState extends BaseTabWidgetState<MyTabWidget> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text(_username),
+      child: Text(_username, style: TextStyle(fontSize: 80)),
     );
   }
 

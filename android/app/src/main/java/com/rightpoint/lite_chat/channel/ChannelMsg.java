@@ -1,19 +1,17 @@
 package com.rightpoint.lite_chat.channel;
 
-import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
-import com.rightpoint.lite_chat.IM.IMsgReceiver;
+import com.rightpoint.lite_chat.IM.BaseMsgReceiver;
 import com.rightpoint.lite_chat.IM.IMsgSender;
+import com.rightpoint.lite_chat.IM.Msg;
 import com.rightpoint.lite_chat.IM.huanxin.HXReceiver;
 import com.rightpoint.lite_chat.IM.huanxin.HXSender;
 import com.rightpoint.lite_chat.MainActivity;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugin.common.MethodCall;
@@ -66,37 +64,13 @@ public class ChannelMsg {
         MethodChannel methodChannel = new MethodChannel(activity.getFlutterView(),
                 ChannelMsg.CHANNEL_NATIVE_CALL);
 
-        IMsgReceiver msgReceiver = new HXReceiver();
+        BaseMsgReceiver msgReceiver = new HXReceiver();
 
-        msgReceiver.registerMsgListener(new IMsgReceiver.MsgReceiverListener() {
+        msgReceiver.registerMsgListener(new BaseMsgReceiver.MsgReceiverListener() {
+
             @Override
-            public void receiveTxt(String from, String txt) {
-                Map<String, String> msg = new HashMap<>(2);
-
-                msg.put("from", from);
-                msg.put("txt", txt);
-
+            public void receive(Msg msg) {
                 methodChannel.invokeMethod("receiveTxtMsg", msg);
-            }
-
-            @Override
-            public void receiveImg(String from, boolean original, Uri thumbUri, Uri imgUri) {
-
-            }
-
-            @Override
-            public void receiveVoice(String from, int length, Uri voiceUri) {
-
-            }
-
-            @Override
-            public void receiveVideo(String from, int length, Uri thumbUri, Uri videoUri) {
-
-            }
-
-            @Override
-            public void receiveFile(String from, Uri fileUri) {
-
             }
         });
 

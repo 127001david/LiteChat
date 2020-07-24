@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
+import com.rightpoint.lite_chat.channel.ChannelConversation;
 import com.rightpoint.lite_chat.channel.ChannelFriend;
 import com.rightpoint.lite_chat.channel.ChannelMsg;
 import com.rightpoint.lite_chat.channel.ChannelUserInfo;
@@ -20,5 +21,6 @@ public class MainActivity extends FlutterActivity {
         ChannelUserInfo.connect(this);
         ChannelFriend.connect(this);
         ChannelMsg.connect(this);
+        ChannelConversation.connect(this);
     }
 }
