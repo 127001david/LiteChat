@@ -19,7 +19,8 @@ class MsgPageRoute extends StatefulWidget {
   }
 }
 
-class MsgPageState extends State<MsgPageRoute> {
+class MsgPageState extends State<MsgPageRoute>
+    with SingleTickerProviderStateMixin {
   static const channelCallNative =
       const MethodChannel(Constant.channel_send_msg);
   static const platformNativeCall =
@@ -36,9 +37,17 @@ class MsgPageState extends State<MsgPageRoute> {
 
   bool _hasTxt = false;
 
+  Animation<double> _sendButtonAnimation;
+  AnimationController _sendButtonAnimController;
+
   @override
   void initState() {
     super.initState();
+
+    _sendButtonAnimController =
+        AnimationController(duration: Duration(milliseconds: 100), vsync: this);
+    _sendButtonAnimation =
+        Tween(begin: 0.5, end: 1.0).animate(_sendButtonAnimController);
 
     _getMsgList();
 
@@ -53,16 +62,32 @@ class MsgPageState extends State<MsgPageRoute> {
       setState(() {});
     });
 
+    AnimationStatusListener listener = (status) {
+      print(status);
+      if (status == AnimationStatus.dismissed) {
+        setState(() {});
+      }
+    };
+
     _msgTextFieldController.addListener(() {
       _hasTxt = _msgTextFieldController.text != null &&
           _msgTextFieldController.text.trim() != '';
-      setState(() {});
+
+      if (_hasTxt) {
+        setState(() {});
+        _sendButtonAnimController.removeStatusListener(listener);
+        _sendButtonAnimController.forward();
+      } else {
+        _sendButtonAnimController.addStatusListener(listener);
+        _sendButtonAnimController.reverse();
+      }
     });
   }
 
   @override
   void dispose() {
     bus.off(username);
+    _sendButtonAnimController.dispose();
     super.dispose();
   }
 
@@ -238,22 +263,8 @@ class MsgPageState extends State<MsgPageRoute> {
                     ),
                   ),
                   _hasTxt
-                      ? GestureDetector(
-                          child: Container(
-                            width: 54,
-                            height: 29,
-                            margin: EdgeInsets.only(right: 7),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 7, 193, 96),
-                                borderRadius: BorderRadius.circular(3)),
-                            child: Text(
-                              '发送',
-                              textDirection: TextDirection.ltr,
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 15),
-                            ),
-                          ),
+                      ? AnimatedText(
+                          animation: _sendButtonAnimation,
                           onTap: () {
                             _sendTxt(_msgTextFieldController.text.trim());
                             _msgTextFieldController.clear();
@@ -319,5 +330,43 @@ class MsgPageState extends State<MsgPageRoute> {
 
       setState(() {});
     } on PlatformException catch (e) {}
+  }
+}
+
+class AnimatedText extends AnimatedWidget {
+  AnimatedText({Key key, Animation<double> animation, this.onTap})
+      : super(key: key, listenable: animation);
+
+  final GestureTapCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Animation<double> animation = listenable;
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (BuildContext context, Widget child) {
+        return GestureDetector(
+          child: Container(
+            width: 54 * animation.value,
+            height: 29,
+            margin: EdgeInsets.only(right: 7),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                color: Color.fromARGB(255, 7, 193, 96),
+                borderRadius: BorderRadius.circular(3)),
+            child: child,
+          ),
+          onTap: onTap,
+        );
+      },
+      child: Text(
+        '发送',
+        textDirection: TextDirection.ltr,
+        style: TextStyle(
+            color:
+                Color.fromARGB((255 * animation.value).toInt(), 255, 255, 255),
+            fontSize: 15 * animation.value),
+      ),
+    );
   }
 }
