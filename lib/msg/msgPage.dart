@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lite_chat/msg/event_bus.dart';
-import 'package:lite_chat/msg/model/msgTxt.dart';
+import 'package:lite_chat/msg/model/msg.dart';
+import 'package:lite_chat/user/userInfo.dart';
 
 import '../constant.dart';
 import 'model/baseMsg.dart';
@@ -23,26 +24,38 @@ class MsgPageState extends State<MsgPageRoute> {
       const MethodChannel(Constant.channel_send_msg);
   static const platformNativeCall =
       const MethodChannel(Constant.channel_receive_msg);
+  static const channelConversation =
+      const MethodChannel(Constant.channel_conversation);
 
   MsgPageState(this.username);
 
   final String username;
-  final List<MsgContainer> msgList = [];
+  final List<MsgContainer> _msgList = [];
 
   TextEditingController _msgTextFieldController = TextEditingController();
+
+  bool _hasTxt = false;
 
   @override
   void initState() {
     super.initState();
 
+    _getMsgList();
+
     bus.on(username, (e) {
       final msg = e as Map;
-      if('type_txt' == msg['type']) {
+      if ('type_txt' == msg['type']) {
         print('收到一条新消息：from ${msg['from']}, txt ${msg['txt']}');
-        MsgContainer baseMsg = MsgContainer(msg_type.txt, msgTxtFromMap(msg));
-        msgList.insert(0, baseMsg);
+        MsgContainer baseMsg = MsgContainer(type_txt, msgFromMap(msg));
+        _msgList.insert(0, baseMsg);
       }
 
+      setState(() {});
+    });
+
+    _msgTextFieldController.addListener(() {
+      _hasTxt = _msgTextFieldController.text != null &&
+          _msgTextFieldController.text.trim() != '';
       setState(() {});
     });
   }
@@ -73,10 +86,10 @@ class MsgPageState extends State<MsgPageRoute> {
               child: DecoratedBox(
                 child: ListView.builder(
                     reverse: true,
-                    itemCount: msgList.length,
+                    itemCount: _msgList.length,
                     itemBuilder: (context, index) {
-                      if (msg_type.txt == msgList[index].msgType) {
-                        MsgTxt msgTxt = msgList[index].msg as MsgTxt;
+                      if (type_txt == _msgList[index].msgType) {
+                        Msg msgTxt = _msgList[index].msg as Msg;
                         if (username == msgTxt.from) {
                           return Row(
                             children: <Widget>[
@@ -111,7 +124,7 @@ class MsgPageState extends State<MsgPageRoute> {
                                         image: AssetImage(
                                             'assets/white_bubble.png'))),
                                 child: Text(
-                                  (msgList[index].msg as MsgTxt).txt,
+                                  (_msgList[index].msg as Msg).txt,
                                   style: TextStyle(fontSize: 14.0),
                                 ),
                               ),
@@ -151,7 +164,7 @@ class MsgPageState extends State<MsgPageRoute> {
                                             Rect.fromLTWH(5, 25, 28, 7),
                                         image: AssetImage(
                                             'assets/yellow_bubble.png'))),
-                                child: Text((msgList[index].msg as MsgTxt).txt,
+                                child: Text((_msgList[index].msg as Msg).txt,
                                     textAlign: TextAlign.left,
                                     style: TextStyle(fontSize: 14.0)),
                               ),
@@ -201,14 +214,6 @@ class MsgPageState extends State<MsgPageRoute> {
                       cursorColor: Color.fromARGB(255, 7, 193, 96),
                       cursorWidth: 2,
                       controller: _msgTextFieldController,
-                      textInputAction: TextInputAction.send,
-                      onEditingComplete: () {
-                        String txt = _msgTextFieldController.text;
-                        if (null != txt && '' != txt.trim()) {
-                          _sendTxt(txt);
-                          _msgTextFieldController.clear();
-                        }
-                      },
                       decoration: InputDecoration(
                           contentPadding: EdgeInsets.all(0),
                           isDense: true,
@@ -232,18 +237,40 @@ class MsgPageState extends State<MsgPageRoute> {
                       ),
                     ),
                   ),
-                  Container(
-                    width: 24,
-                    height: 24,
-                    margin: EdgeInsets.only(right: 9),
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: Image.asset(
-                        'assets/more_panel.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
+                  _hasTxt
+                      ? GestureDetector(
+                          child: Container(
+                            width: 54,
+                            height: 29,
+                            margin: EdgeInsets.only(right: 7),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: Color.fromARGB(255, 7, 193, 96),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: Text(
+                              '发送',
+                              textDirection: TextDirection.ltr,
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 15),
+                            ),
+                          ),
+                          onTap: () {
+                            _sendTxt(_msgTextFieldController.text.trim());
+                            _msgTextFieldController.clear();
+                          },
+                        )
+                      : Container(
+                          width: 24,
+                          height: 24,
+                          margin: EdgeInsets.only(right: 9),
+                          child: GestureDetector(
+                            onTap: () {},
+                            child: Image.asset(
+                              'assets/more_panel.png',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                 ],
               ),
             )
@@ -253,16 +280,40 @@ class MsgPageState extends State<MsgPageRoute> {
     );
   }
 
+  Future _getMsgList() async {
+    try {
+      List<dynamic> msgList = await channelConversation
+          .invokeMethod('getMsgList', {'username': username});
+
+      print('与${username}的聊天记录：${msgList}');
+
+      msgList.forEach((element) {
+        Msg msg = msgFromMap(element);
+        MsgContainer msgContainer = MsgContainer(element['type'], msg);
+        _msgList.insert(0, msgContainer);
+      });
+
+      setState(() {});
+    } on PlatformException catch (e) {}
+  }
+
   Future _sendTxt(String msg) async {
     try {
       await channelCallNative
           .invokeMethod('sendTxt', {'txt': msg, 'username': username});
 
-      MsgTxt msgTxt = MsgTxt(to: username, txt: msg);
+      Msg msgTxt = Msg(
+          username: username,
+          from: loginUser,
+          to: username,
+          time: new DateTime.now().millisecondsSinceEpoch,
+          txt: msg);
 
-      MsgContainer baseMsg = MsgContainer(msg_type.txt, msgTxt);
+      MsgContainer msgContainer = MsgContainer(type_txt, msgTxt);
 
-      msgList.insert(0, baseMsg);
+      _msgList.insert(0, msgContainer);
+
+      bus.emit(username, msgToMap(msgTxt));
 
       print(msg);
 

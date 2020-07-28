@@ -5,7 +5,7 @@ import 'package:lite_chat/constant.dart';
 import 'package:lite_chat/homepage.dart';
 import 'package:lite_chat/user/login.dart';
 import 'package:lite_chat/user/register.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lite_chat/user/userInfo.dart';
 
 class IndexPage extends StatefulWidget {
   @override
@@ -74,15 +74,13 @@ class IndexState extends State<IndexPage> {
   }
 
   Future<void> checkLogin() async {
-    String username;
-
     try {
-      username = await channelCallNative.invokeMethod('checkLogin');
+      loginUser = await channelCallNative.invokeMethod('checkLogin');
 
       print('login success');
     } on PlatformException catch (e) {}
 
-    if (null == username) {
+    if (null == loginUser) {
       _needLogin = true;
       setState(() {});
     } else {

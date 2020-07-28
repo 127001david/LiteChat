@@ -39,6 +39,15 @@ public class ChannelConversation {
                             result.success(conversations);
                         }
                     });
+                } else if ("getMsgList".equals(call.method)) {
+                    String username = call.argument("username");
+                    List<Msg> msgList = iResolveConversation.getMsgList(username);
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            result.success(msgList);
+                        }
+                    });
                 }
             }
         });

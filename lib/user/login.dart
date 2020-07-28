@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lite_chat/homepage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lite_chat/user/userInfo.dart';
 
 import '../constant.dart';
 
@@ -97,6 +97,8 @@ class LoginState extends State<LoginRoute> {
                       });
 
                       print('login success');
+
+                      loginUser = _unameController.text.trim();
 
                       Navigator.pushAndRemoveUntil(context,
                           MaterialPageRoute(builder: (BuildContext context) {

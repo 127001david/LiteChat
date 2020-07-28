@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lite_chat/homepage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lite_chat/user/userInfo.dart';
 
 import '../constant.dart';
 
@@ -111,17 +111,13 @@ class RegisterState extends State<RegisterRoute> {
                       (_formCheckPwdKey.currentState as FormState).validate()) {
                     try {
                       await channelCallNative.invokeMethod('register', {
-                        'username': _unameController.text,
-                        'pwd': _pwdController.text
+                        'username': _unameController.text.trim(),
+                        'pwd': _pwdController.text.trim()
                       });
 
                       print('register success');
 
-                      SharedPreferences instance =
-                          await SharedPreferences.getInstance();
-
-                      instance.setString(
-                          'username', _unameController.text.trim());
+                      loginUser = _unameController.text.trim();
 
                       Navigator.pushAndRemoveUntil(context,
                           MaterialPageRoute(builder: (BuildContext context) {

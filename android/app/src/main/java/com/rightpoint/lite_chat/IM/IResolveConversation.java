@@ -13,4 +13,11 @@ public interface IResolveConversation {
      * @return 本地会话列表，每一项都是会话的最新一条消息
      */
     abstract List<Msg> getConversation();
+
+    /**
+     * 获取本地聊天记录
+     * @param username 聊天对象
+     * @return 聊天记录列表
+     */
+    abstract List<Msg> getMsgList(String username);
 }

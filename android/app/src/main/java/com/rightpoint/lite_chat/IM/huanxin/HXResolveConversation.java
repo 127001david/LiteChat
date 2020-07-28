@@ -2,6 +2,7 @@ package com.rightpoint.lite_chat.IM.huanxin;
 
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
+import com.hyphenate.chat.EMMessage;
 import com.rightpoint.lite_chat.IM.IResolveConversation;
 import com.rightpoint.lite_chat.IM.Msg;
 
@@ -31,5 +32,21 @@ public class HXResolveConversation implements IResolveConversation {
         });
 
         return list;
+    }
+
+    @Override
+    public List<Msg> getMsgList(String username) {
+        EMConversation conversation =
+                EMClient.getInstance().chatManager().getConversation(username);
+        EMMessage emMessage = conversation.getLastMessage();
+        conversation.loadMoreMsgFromDB(emMessage.getMsgId(), 19);
+        List<EMMessage> messages = conversation.getAllMessages();
+
+        List<Msg> msgs = new ArrayList<>();
+        for (EMMessage message : messages) {
+            msgs.add(ResolveMsg.resolveMsg(message));
+        }
+
+        return msgs;
     }
 }

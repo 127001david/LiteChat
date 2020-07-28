@@ -13,11 +13,12 @@ import com.rightpoint.lite_chat.IM.Msg;
  */
 public class ResolveMsg {
     public static Msg resolveMsg(EMMessage msg) {
-        return resolveMsg(null,msg);
+        return resolveMsg(null, msg);
     }
 
-    public static Msg resolveMsg(String username ,EMMessage msg) {
+    public static Msg resolveMsg(String username, EMMessage msg) {
         Msg message = new Msg()
+                .setUsername(msg.getFrom())
                 .setFrom(msg.getFrom())
                 .setTo(msg.getTo())
                 .setTime(msg.getMsgTime());

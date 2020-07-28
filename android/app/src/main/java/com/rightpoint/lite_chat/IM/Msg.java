@@ -118,6 +118,15 @@ public class Msg extends HashMap<String, Object> {
         return (String) get("voiceUri");
     }
 
+    public Msg setLength(int length) {
+        put("length", length);
+        return this;
+    }
+
+    public int getLength() {
+        return (int) get("length");
+    }
+
     public Msg setVideoUri(String videoUri) {
         put("videoUri", videoUri);
         return this;
@@ -125,5 +134,14 @@ public class Msg extends HashMap<String, Object> {
 
     public String getVideoUri() {
         return (String) get("videoUri");
+    }
+
+    public Msg setFileUri(String fileUri) {
+        put("fileUri", fileUri);
+        return this;
+    }
+
+    public String getFileUri() {
+        return (String) get("fileUri");
     }
 }

@@ -31,7 +31,15 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
 
     bus.on(null, (e) {
       final msg = e as Map;
-      if ('type_txt' == msg['type']) {}
+
+      for (int i = 0; i < _conversations.length; i++) {
+        if (_conversations[i]['username'] == msg['username']) {
+          _conversations.removeAt(i);
+          break;
+        }
+      }
+
+      _conversations.insert(0, msg);
 
       setState(() {});
     });
