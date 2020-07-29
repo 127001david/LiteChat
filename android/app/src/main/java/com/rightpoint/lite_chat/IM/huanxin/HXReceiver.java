@@ -10,7 +10,7 @@ import com.rightpoint.lite_chat.IM.BaseMsgReceiver;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import io.flutter.app.FlutterActivity;
+import io.flutter.embedding.android.FlutterActivity;
 
 /**
  * Description：

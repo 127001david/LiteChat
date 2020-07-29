@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/user/userInfo.dart';
+import 'package:lite_chat/widget/animatedText.dart';
 
 import '../constant.dart';
 import 'model/baseMsg.dart';
@@ -262,26 +264,49 @@ class MsgPageState extends State<MsgPageRoute>
                       ),
                     ),
                   ),
-                  _hasTxt
-                      ? AnimatedText(
-                          animation: _sendButtonAnimation,
-                          onTap: () {
-                            _sendTxt(_msgTextFieldController.text.trim());
-                            _msgTextFieldController.clear();
-                          },
-                        )
-                      : Container(
-                          width: 24,
-                          height: 24,
-                          margin: EdgeInsets.only(right: 9),
-                          child: GestureDetector(
-                            onTap: () {},
-                            child: Image.asset(
-                              'assets/more_panel.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                  if (_hasTxt)
+                    AnimatedText(
+                      animation: _sendButtonAnimation,
+                      onTap: () {
+                        _sendTxt(_msgTextFieldController.text.trim());
+                        _msgTextFieldController.clear();
+                      },
+                    )
+                  else
+                    Container(
+                      width: 24,
+                      height: 24,
+                      margin: EdgeInsets.only(right: 9),
+                      child: GestureDetector(
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return SimpleDialog(
+                                  title: Text('选择照片'),
+                                  children: <Widget>[
+                                    SimpleDialogOption(
+                                      child: Text('相册'),
+                                      onPressed: () {
+                                        _selectPicture();
+                                      },
+                                    ),
+                                    SimpleDialogOption(
+                                      child: Text('拍照'),
+                                      onPressed: () {
+                                        _takePicture();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              });
+                        },
+                        child: Image.asset(
+                          'assets/more_panel.png',
+                          fit: BoxFit.cover,
                         ),
+                      ),
+                    ),
                 ],
               ),
             )
@@ -331,42 +356,14 @@ class MsgPageState extends State<MsgPageRoute>
       setState(() {});
     } on PlatformException catch (e) {}
   }
-}
 
-class AnimatedText extends AnimatedWidget {
-  AnimatedText({Key key, Animation<double> animation, this.onTap})
-      : super(key: key, listenable: animation);
+  Future _takePicture() async {
+    var image = await ImagePicker().getImage(source: ImageSource.camera);
+    print('图片路径${image.path}');
+  }
 
-  final GestureTapCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final Animation<double> animation = listenable;
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (BuildContext context, Widget child) {
-        return GestureDetector(
-          child: Container(
-            width: 54 * animation.value,
-            height: 29,
-            margin: EdgeInsets.only(right: 7),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-                color: Color.fromARGB(255, 7, 193, 96),
-                borderRadius: BorderRadius.circular(3)),
-            child: child,
-          ),
-          onTap: onTap,
-        );
-      },
-      child: Text(
-        '发送',
-        textDirection: TextDirection.ltr,
-        style: TextStyle(
-            color:
-                Color.fromARGB((255 * animation.value).toInt(), 255, 255, 255),
-            fontSize: 15 * animation.value),
-      ),
-    );
+  Future _selectPicture() async {
+    var image = await ImagePicker().getImage(source: ImageSource.gallery);
+    print('图片路径${image.path}');
   }
 }

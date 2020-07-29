@@ -9,6 +9,7 @@ import com.rightpoint.lite_chat.MainActivity;
 
 import java.util.List;
 
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
@@ -20,8 +21,8 @@ import io.flutter.plugin.common.MethodChannel;
 public class ChannelConversation {
     static final String CHANNEL_CONVERSATION = "com.rightpoint.litechat/conversation";
 
-    public static void connect(MainActivity activity) {
-        MethodChannel methodChannel = new MethodChannel(activity.getFlutterView(),
+    public static void connect(FlutterEngine flutterEngine, MainActivity activity) {
+        MethodChannel methodChannel = new MethodChannel(flutterEngine.getDartExecutor(),
                 CHANNEL_CONVERSATION);
 
         IResolveConversation iResolveConversation = new HXResolveConversation();

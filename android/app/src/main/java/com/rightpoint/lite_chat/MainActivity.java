@@ -1,26 +1,27 @@
 package com.rightpoint.lite_chat;
 
-import android.os.Bundle;
-
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
 import com.rightpoint.lite_chat.channel.ChannelConversation;
 import com.rightpoint.lite_chat.channel.ChannelFriend;
 import com.rightpoint.lite_chat.channel.ChannelMsg;
 import com.rightpoint.lite_chat.channel.ChannelUserInfo;
 
-import io.flutter.app.FlutterActivity;
+import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity {
     static final String CHANNEL_NATIVE_CALL = "com.rightpoint.litechat/nativecall";
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
+        super.configureFlutterEngine(flutterEngine);
+        GeneratedPluginRegistrant.registerWith(flutterEngine);
 
-        ChannelUserInfo.connect(this);
-        ChannelFriend.connect(this);
-        ChannelMsg.connect(this);
-        ChannelConversation.connect(this);
+        ChannelUserInfo.connect(flutterEngine, this);
+        ChannelFriend.connect(flutterEngine, this);
+        ChannelMsg.connect(flutterEngine, this);
+        ChannelConversation.connect(flutterEngine, this);
     }
 }

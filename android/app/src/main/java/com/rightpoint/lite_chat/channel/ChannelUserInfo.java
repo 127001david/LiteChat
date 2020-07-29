@@ -13,6 +13,7 @@ import com.hyphenate.exceptions.HyphenateException;
 import com.rightpoint.lite_chat.MainActivity;
 import com.rightpoint.lite_chat.ThreadPoolProvider;
 
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
@@ -24,13 +25,14 @@ import io.flutter.plugin.common.MethodChannel;
 public class ChannelUserInfo {
     static final String CHANNEL_CALL_NATIVE = "com.rightpoint.litechat/userInfo";
 
-    public static void connect(MainActivity activity) {
-        new MethodChannel(activity.getFlutterView(), CHANNEL_CALL_NATIVE).setMethodCallHandler(new MethodChannel.MethodCallHandler() {
+    public static void connect(FlutterEngine flutterEngine, MainActivity activity) {
+        new MethodChannel(flutterEngine.getDartExecutor(), CHANNEL_CALL_NATIVE).setMethodCallHandler(new MethodChannel.MethodCallHandler() {
             @Override
             public void onMethodCall(@NonNull MethodCall call,
                                      @NonNull MethodChannel.Result result) {
                 if ("checkLogin".equals(call.method)) {
-                    SharedPreferences sp = activity.getSharedPreferences("userInfo", Activity.MODE_PRIVATE);
+                    SharedPreferences sp = activity.getSharedPreferences("userInfo",
+                            Activity.MODE_PRIVATE);
 
                     String username = sp.getString("username", null);
 
@@ -106,7 +108,8 @@ public class ChannelUserInfo {
 
                                 Log.d("main", "注册成功！");
 
-                                SharedPreferences sp = activity.getSharedPreferences("userInfo", Activity.MODE_PRIVATE);
+                                SharedPreferences sp = activity.getSharedPreferences("userInfo",
+                                        Activity.MODE_PRIVATE);
                                 SharedPreferences.Editor edit = sp.edit();
 
                                 String key = call.argument("key");

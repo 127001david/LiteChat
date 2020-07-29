@@ -11,6 +11,7 @@ import com.rightpoint.lite_chat.ThreadPoolProvider;
 
 import java.util.List;
 
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
@@ -22,8 +23,8 @@ import io.flutter.plugin.common.MethodChannel;
 public class ChannelFriend {
     static final String CHANNEL_CALL_NATIVE = "com.rightpoint.litechat/friend";
 
-    public static void connect(MainActivity activity) {
-        new MethodChannel(activity.getFlutterView(), CHANNEL_CALL_NATIVE).setMethodCallHandler(new MethodChannel.MethodCallHandler() {
+    public static void connect(FlutterEngine flutterEngine, MainActivity activity) {
+        new MethodChannel(flutterEngine.getDartExecutor(), CHANNEL_CALL_NATIVE).setMethodCallHandler(new MethodChannel.MethodCallHandler() {
             @Override
             public void onMethodCall(@NonNull MethodCall call,
                                      @NonNull MethodChannel.Result result) {

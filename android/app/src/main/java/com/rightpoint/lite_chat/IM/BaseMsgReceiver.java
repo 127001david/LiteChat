@@ -2,7 +2,7 @@ package com.rightpoint.lite_chat.IM;
 
 import java.lang.ref.WeakReference;
 
-import io.flutter.app.FlutterActivity;
+import io.flutter.embedding.android.FlutterActivity;
 
 /**
  * Description：
@@ -30,7 +30,6 @@ public abstract class BaseMsgReceiver {
         /**
          * 消息
          * @param msg 消息体，是一个 HashMap<String, Object>
-         * @param txt 文本
          */
         void receive(Msg msg);
     }

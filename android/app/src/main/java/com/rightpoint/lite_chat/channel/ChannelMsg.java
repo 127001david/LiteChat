@@ -13,7 +13,8 @@ import com.rightpoint.lite_chat.MainActivity;
 
 import java.lang.ref.WeakReference;
 
-import io.flutter.app.FlutterActivity;
+import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
@@ -26,15 +27,15 @@ public class ChannelMsg {
     static final String CHANNEL_CALL_NATIVE = "com.rightpoint.litechat/msg";
     static final String CHANNEL_NATIVE_CALL = "com.rightpoint.litechat/receive_msg";
 
-    public static void connect(MainActivity activity) {
-        receiveMsg(activity);
-        resolveSendMsg(activity);
+    public static void connect(FlutterEngine flutterEngine, MainActivity activity) {
+        receiveMsg(flutterEngine, activity);
+        resolveSendMsg(flutterEngine, activity);
     }
 
-    private static void resolveSendMsg(MainActivity activity) {
+    private static void resolveSendMsg(FlutterEngine flutterEngine, MainActivity activity) {
         IMsgSender sender = new HXSender();
 
-        new MethodChannel(activity.getFlutterView(), CHANNEL_CALL_NATIVE).setMethodCallHandler(new MethodChannel.MethodCallHandler() {
+        new MethodChannel(flutterEngine.getDartExecutor(), CHANNEL_CALL_NATIVE).setMethodCallHandler(new MethodChannel.MethodCallHandler() {
             @Override
             public void onMethodCall(@NonNull MethodCall call,
                                      @NonNull MethodChannel.Result result) {
@@ -60,8 +61,8 @@ public class ChannelMsg {
         });
     }
 
-    private static void receiveMsg(MainActivity activity) {
-        MethodChannel methodChannel = new MethodChannel(activity.getFlutterView(),
+    private static void receiveMsg(FlutterEngine flutterEngine, MainActivity activity) {
+        MethodChannel methodChannel = new MethodChannel(flutterEngine.getDartExecutor(),
                 ChannelMsg.CHANNEL_NATIVE_CALL);
 
         BaseMsgReceiver msgReceiver = new HXReceiver();
