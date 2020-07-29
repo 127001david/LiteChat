@@ -279,27 +279,7 @@ class MsgPageState extends State<MsgPageRoute>
                       margin: EdgeInsets.only(right: 9),
                       child: GestureDetector(
                         onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return SimpleDialog(
-                                  title: Text('选择照片'),
-                                  children: <Widget>[
-                                    SimpleDialogOption(
-                                      child: Text('相册'),
-                                      onPressed: () {
-                                        _selectPicture();
-                                      },
-                                    ),
-                                    SimpleDialogOption(
-                                      child: Text('拍照'),
-                                      onPressed: () {
-                                        _takePicture();
-                                      },
-                                    ),
-                                  ],
-                                );
-                              });
+                          _showGetPictureDialog();
                         },
                         child: Image.asset(
                           'assets/more_panel.png',
@@ -357,13 +337,43 @@ class MsgPageState extends State<MsgPageRoute>
     } on PlatformException catch (e) {}
   }
 
+  void _showGetPictureDialog() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return SimpleDialog(
+            title: Text('选择照片'),
+            children: <Widget>[
+              SimpleDialogOption(
+                child: Text('相册'),
+                onPressed: () {
+                  _selectPicture();
+                  Navigator.pop(context);
+                },
+              ),
+              SimpleDialogOption(
+                child: Text('拍照'),
+                onPressed: () {
+                  _takePicture();
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
   Future _takePicture() async {
     var image = await ImagePicker().getImage(source: ImageSource.camera);
-    print('图片路径${image.path}');
+    if (null != image) {
+      print('图片路径${image.path}');
+    }
   }
 
   Future _selectPicture() async {
     var image = await ImagePicker().getImage(source: ImageSource.gallery);
-    print('图片路径${image.path}');
+    if (null != image) {
+      print('图片路径${image.path}');
+    }
   }
 }
