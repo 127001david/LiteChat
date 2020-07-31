@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -95,6 +97,10 @@ class MsgPageState extends State<MsgPageRoute>
 
   @override
   Widget build(BuildContext context) {
+    Container spaceDivider = Container(
+      height: 11,
+    );
+
     return Scaffold(
       appBar: AppBar(title: Text(username), actions: <Widget>[
         Container(
@@ -111,97 +117,129 @@ class MsgPageState extends State<MsgPageRoute>
           children: <Widget>[
             Expanded(
               child: DecoratedBox(
-                child: ListView.builder(
-                    reverse: true,
-                    itemCount: _msgList.length,
-                    itemBuilder: (context, index) {
-                      if (type_txt == _msgList[index].msgType) {
-                        Msg msgTxt = _msgList[index].msg as Msg;
-                        if (username == msgTxt.from) {
-                          return Row(
-                            children: <Widget>[
-                              Container(
-                                width: 39,
-                                height: 39,
-                                margin: EdgeInsets.only(left: 10, bottom: 11),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                        color: Colors.orangeAccent),
-                                    child: Icon(
-                                      Icons.perm_contact_calendar,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
+                child: ListView.separated(
+                  reverse: true,
+                  itemCount: _msgList.length,
+                  physics: BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    MsgContainer msgContainer = _msgList[index];
+                    if (type_txt == msgContainer.msgType) {
+                      Msg msgTxt = msgContainer.msg as Msg;
+                      if (username == msgTxt.from) {
+                        return Row(
+                          children: <Widget>[
+                            OtherIcon(),
+                            Container(
+                              margin: EdgeInsets.only(left: 5),
+                              padding: EdgeInsets.only(
+                                  left: 16, top: 9, right: 12, bottom: 9),
+                              constraints: BoxConstraints(
+                                  minWidth: 43.0,
+                                  maxWidth: 240.0,
+                                  minHeight: 37),
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      centerSlice: Rect.fromLTWH(5, 25, 28, 7),
+                                      image: AssetImage(
+                                          'assets/white_bubble.png'))),
+                              child: Text(
+                                (msgContainer.msg as Msg).txt,
+                                style: TextStyle(fontSize: 14.0),
                               ),
-                              Container(
-                                margin: EdgeInsets.only(left: 5, bottom: 11),
-                                padding: EdgeInsets.only(
-                                    left: 16, top: 9, right: 12, bottom: 9),
-                                constraints: BoxConstraints(
-                                    minWidth: 43.0,
-                                    maxWidth: 240.0,
-                                    minHeight: 37),
-                                decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        centerSlice:
-                                            Rect.fromLTWH(5, 25, 28, 7),
-                                        image: AssetImage(
-                                            'assets/white_bubble.png'))),
-                                child: Text(
-                                  (_msgList[index].msg as Msg).txt,
-                                  style: TextStyle(fontSize: 14.0),
-                                ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          return Row(
-                            textDirection: TextDirection.rtl,
-                            children: <Widget>[
-                              Container(
-                                width: 39,
-                                height: 39,
-                                margin: EdgeInsets.only(right: 10, bottom: 11),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: DecoratedBox(
-                                    decoration:
-                                        BoxDecoration(color: Colors.grey),
-                                    child: Icon(
-                                      Icons.perm_contact_calendar,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(right: 5, bottom: 11),
-                                padding: EdgeInsets.only(
-                                    left: 12, top: 9, right: 16, bottom: 9),
-                                constraints: BoxConstraints(
-                                    minWidth: 43.0,
-                                    maxWidth: 240.0,
-                                    minHeight: 39),
-                                decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        centerSlice:
-                                            Rect.fromLTWH(5, 25, 28, 7),
-                                        image: AssetImage(
-                                            'assets/yellow_bubble.png'))),
-                                child: Text((_msgList[index].msg as Msg).txt,
-                                    textAlign: TextAlign.left,
-                                    style: TextStyle(fontSize: 14.0)),
-                              ),
-                            ],
-                          );
-                        }
+                            ),
+                          ],
+                        );
+                      } else {
+                        return Row(
+                          textDirection: TextDirection.rtl,
+                          children: <Widget>[
+                            MyIcon(),
+                            Container(
+                              margin: EdgeInsets.only(right: 5),
+                              padding: EdgeInsets.only(
+                                  left: 12, top: 9, right: 16, bottom: 9),
+                              constraints: BoxConstraints(
+                                  minWidth: 43.0,
+                                  maxWidth: 240.0,
+                                  minHeight: 39),
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      centerSlice: Rect.fromLTWH(5, 25, 28, 7),
+                                      image: AssetImage(
+                                          'assets/yellow_bubble.png'))),
+                              child: Text((msgContainer.msg as Msg).txt,
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(fontSize: 14.0)),
+                            ),
+                          ],
+                        );
                       }
+                    } else if (type_img == msgContainer.msgType) {
+                      Msg msgImg = msgContainer.msg as Msg;
 
-                      return ListTile();
-                    }),
+                      if (username == msgImg.from) {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            OtherIcon(),
+                            Container(
+                              margin: EdgeInsets.only(left: 5),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: Image.network(
+                                  msgImg.thumbUrl,
+                                  height: 150,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return Row(
+                          textDirection: TextDirection.rtl,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            MyIcon(),
+                            Container(
+                              margin: EdgeInsets.only(right: 5),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: msgImg.thumbUrl.startsWith("http")
+                                    ? Image.network(
+                                        msgImg.thumbUrl,
+                                        width: msgImg.width > msgImg.height &&
+                                                msgImg.width > 150
+                                            ? 150
+                                            : null,
+                                        height: msgImg.height > msgImg.width &&
+                                                msgImg.height > 150
+                                            ? 150
+                                            : null,
+                                      )
+                                    : Image.file(
+                                        File(msgImg.thumbUrl),
+                                        width: msgImg.width > msgImg.height &&
+                                                msgImg.width > 150
+                                            ? 150
+                                            : null,
+                                        height: msgImg.height > msgImg.width &&
+                                                msgImg.height > 150
+                                            ? 150
+                                            : null,
+                                      ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                    }
+
+                    return ListTile();
+                  },
+                  separatorBuilder: (BuildContext context, int index) {
+                    return spaceDivider;
+                  },
+                ),
                 decoration:
                     BoxDecoration(color: Color.fromARGB(255, 237, 237, 237)),
               ),
@@ -337,6 +375,24 @@ class MsgPageState extends State<MsgPageRoute>
     } on PlatformException catch (e) {}
   }
 
+  Future _sendImg(String path) async {
+    try {
+      Map map = await channelCallNative
+          .invokeMethod('sendImg', {'imgPath': path, 'username': username});
+
+      Msg msg = msgFromMap(map);
+      print('图片已发送：$msg');
+
+      MsgContainer msgContainer = MsgContainer(type_img, msg);
+
+      _msgList.insert(0, msgContainer);
+
+      bus.emit(username, map);
+
+      setState(() {});
+    } on PlatformException catch (e) {}
+  }
+
   void _showGetPictureDialog() {
     showDialog(
         context: context,
@@ -367,6 +423,7 @@ class MsgPageState extends State<MsgPageRoute>
     var image = await ImagePicker().getImage(source: ImageSource.camera);
     if (null != image) {
       print('图片路径${image.path}');
+      _sendImg(image.path);
     }
   }
 
@@ -374,6 +431,49 @@ class MsgPageState extends State<MsgPageRoute>
     var image = await ImagePicker().getImage(source: ImageSource.gallery);
     if (null != image) {
       print('图片路径${image.path}');
+      _sendImg(image.path);
     }
+  }
+}
+
+class OtherIcon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 39,
+      height: 39,
+      margin: EdgeInsets.only(left: 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: DecoratedBox(
+          decoration: BoxDecoration(color: Colors.orangeAccent),
+          child: Icon(
+            Icons.perm_contact_calendar,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MyIcon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 39,
+      height: 39,
+      margin: EdgeInsets.only(right: 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: DecoratedBox(
+          decoration: BoxDecoration(color: Colors.grey),
+          child: Icon(
+            Icons.perm_contact_calendar,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
   }
 }

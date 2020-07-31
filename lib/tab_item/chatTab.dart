@@ -58,7 +58,10 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     return Center(
       child: ListView.separated(
         itemCount: _conversations.length,
+        physics: BouncingScrollPhysics(),
         itemBuilder: (BuildContext context, int index) {
+          Map msg = _conversations[index];
+
           return InkWell(
             onTap: () {
               Navigator.push(context,
@@ -114,10 +117,16 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
                                 )),
                           ],
                         ),
-                        Text(_conversations[index]['txt'],
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: Color.fromARGB(255, 178, 178, 178)))
+                        if ('type_txt' == msg['type'])
+                          Text(_conversations[index]['txt'],
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color.fromARGB(255, 178, 178, 178)))
+                        else
+                          Text('[etc]',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color.fromARGB(255, 178, 178, 178)))
                       ],
                     ))
               ],

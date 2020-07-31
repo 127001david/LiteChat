@@ -91,22 +91,40 @@ public class Msg extends HashMap<String, Object> {
         return (boolean) get("original");
     }
 
-    public Msg setThumbUri(String thumbUri) {
-        put("thumbUri", thumbUri);
+    public Msg setThumbUrl(String thumbUri) {
+        put("thumbUrl", thumbUri);
         return this;
     }
 
-    public String getThumbUri() {
-        return (String) get("thumbUri");
+    public String getThumbUrl() {
+        return (String) get("thumbUrl");
     }
 
-    public Msg setImgUri(String imgUri) {
-        put("imgUri", imgUri);
+    public Msg setWidth(int width) {
+        put("width", width);
         return this;
     }
 
-    public String getImgUri() {
-        return (String) get("imgUri");
+    public int getWidth() {
+        return (int) get("width");
+    }
+
+    public Msg setHeight(int height) {
+        put("height", height);
+        return this;
+    }
+
+    public int getHeight() {
+        return (int) get("height");
+    }
+
+    public Msg setImgUrl(String imgUri) {
+        put("imgUrl", imgUri);
+        return this;
+    }
+
+    public String getImgUrl() {
+        return (String) get("imgUrl");
     }
 
     public Msg setVoiceUri(String voiceUri) {

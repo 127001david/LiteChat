@@ -17,7 +17,10 @@ Msg msgFromMap(Map map) {
           to: map['to'],
           time: map['time'],
           original: map['original'],
-          thumbUri: map['thumbUri'],
+          imgUrl: map['imgUrl'],
+          thumbUrl: map['thumbUrl'],
+          width: map['width'],
+          height: map['height'],
           txt: map['imgUri']);
       break;
     case 'type_voice':
@@ -42,39 +45,47 @@ Map msgToMap(Msg data) {
   msg['from'] = data.from;
   msg['to'] = data.to;
 
-  if(null != data.time) {
+  if (null != data.time) {
     msg['time'] = data.time;
   }
 
-  if(null != data.txt) {
+  if (null != data.txt) {
     msg['txt'] = data.txt;
   }
 
-  if(null != data.original) {
+  if (null != data.original) {
     msg['original'] = data.original;
   }
 
-  if(null != data.imgUri) {
-    msg['imgUri'] = data.imgUri;
+  if (null != data.imgUrl) {
+    msg['imgUrl'] = data.imgUrl;
   }
 
-  if(null != data.voiceUri) {
+  if (null != data.voiceUri) {
     msg['voiceUri'] = data.voiceUri;
   }
 
-  if(null != data.length) {
+  if (null != data.length) {
     msg['length'] = data.length;
   }
 
-  if(null != data.thumbUri) {
-    msg['thumbUri'] = data.thumbUri;
+  if (null != data.thumbUrl) {
+    msg['thumbUrl'] = data.thumbUrl;
   }
 
-  if(null != data.videoUri) {
+  if (null != data.width) {
+    msg['width'] = data.width;
+  }
+
+  if (null != data.height) {
+    msg['height'] = data.height;
+  }
+
+  if (null != data.videoUri) {
     msg['videoUri'] = data.videoUri;
   }
 
-  if(null != data.fileUri) {
+  if (null != data.fileUri) {
     msg['fileUri'] = data.fileUri;
   }
 
@@ -89,10 +100,12 @@ class Msg implements BaseMsg {
       this.time,
       this.txt,
       this.original,
-      this.imgUri,
+      this.imgUrl,
       this.voiceUri,
       this.length,
-      this.thumbUri,
+      this.thumbUrl,
+      this.width,
+      this.height,
       this.videoUri,
       this.fileUri});
 
@@ -102,10 +115,17 @@ class Msg implements BaseMsg {
   int time;
   String txt;
   bool original;
-  String imgUri;
+  String imgUrl;
   String voiceUri;
   int length;
-  String thumbUri;
+  String thumbUrl;
+  int width;
+  int height;
   String videoUri;
   String fileUri;
+
+  @override
+  String toString() {
+    return 'msg from:$from, to:$to, time$time, txt:$txt, imgUrl:$imgUrl, thumbUrl:$thumbUrl, width:$width, height:$height, voiceUri:$voiceUri, videoUri:$videoUri, fileUri:$fileUri';
+  }
 }

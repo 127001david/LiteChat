@@ -1,5 +1,6 @@
 package com.rightpoint.lite_chat.channel;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -56,6 +57,38 @@ public class ChannelMsg {
                             result.success("success");
                         }
                     });
+                } else if ("sendImg".equals(call.method)) {
+                    String imgPath = call.argument("imgPath");
+                    String username = call.argument("username");
+                    String isGroup = call.argument("isGroup");
+
+                    if (TextUtils.isEmpty(imgPath) || TextUtils.isEmpty(username)) {
+                        return;
+                    }
+
+                    sender.sendImg(username, !TextUtils.isEmpty(isGroup),
+                            !TextUtils.isEmpty(isGroup), Uri.parse(imgPath),
+                            new IMsgSender.MessageStatusCallback() {
+                                @Override
+                                public void onSuccess(Msg msg) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            result.success(msg);
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onError(int code, String error) {
+
+                                }
+
+                                @Override
+                                public void onProgress(int progress, String status) {
+
+                                }
+                            });
                 }
             }
         });

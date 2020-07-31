@@ -2,6 +2,7 @@ package com.rightpoint.lite_chat.IM.huanxin;
 
 import android.text.TextUtils;
 
+import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.rightpoint.lite_chat.IM.Msg;
@@ -34,6 +35,13 @@ public class ResolveMsg {
                 break;
             }
             case IMAGE: {
+                EMImageMessageBody msgBody = (EMImageMessageBody) msg.getBody();
+                message.setType(Msg.TYPE_IMG)
+                        .setImgUrl(msgBody.getRemoteUrl())
+                        .setThumbUrl(msgBody.getThumbnailUrl())
+                        .setWidth(msgBody.getWidth())
+                        .setHeight(msgBody.getHeight())
+                        .setOriginal(msgBody.isSendOriginalImage());
                 break;
             }
             default:
