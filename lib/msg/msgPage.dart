@@ -195,6 +195,25 @@ class MsgPageState extends State<MsgPageRoute>
                           ],
                         );
                       } else {
+                        double width = 0;
+                        double height = 0;
+                        if (msgImg.width > msgImg.height &&
+                            msgImg.width > 150) {
+                          width = 150;
+                          height = (msgImg.height.toDouble() /
+                                  msgImg.width.toDouble()) *
+                              150;
+                        } else if (msgImg.height > msgImg.width &&
+                            msgImg.height > 150) {
+                          height = 150;
+                          width = (msgImg.width.toDouble() /
+                                  msgImg.height.toDouble()) *
+                              150;
+                        } else {
+                          width = msgImg.width.toDouble();
+                          height = msgImg.height.toDouble();
+                        }
+
                         return Row(
                           textDirection: TextDirection.rtl,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,27 +224,18 @@ class MsgPageState extends State<MsgPageRoute>
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(5),
                                 child: msgImg.thumbUrl.startsWith("http")
-                                    ? Image.network(
-                                        msgImg.thumbUrl,
-                                        width: msgImg.width > msgImg.height &&
-                                                msgImg.width > 150
-                                            ? 150
-                                            : null,
-                                        height: msgImg.height > msgImg.width &&
-                                                msgImg.height > 150
-                                            ? 150
-                                            : null,
+                                    ? FadeInImage.assetNetwork(
+                                        placeholder: 'assets/placeholder.png',
+                                        image: msgImg.thumbUrl,
+                                        fit: BoxFit.fill,
+                                        width: width,
+                                        height: height,
                                       )
                                     : Image.file(
                                         File(msgImg.thumbUrl),
-                                        width: msgImg.width > msgImg.height &&
-                                                msgImg.width > 150
-                                            ? 150
-                                            : null,
-                                        height: msgImg.height > msgImg.width &&
-                                                msgImg.height > 150
-                                            ? 150
-                                            : null,
+                                        fit: BoxFit.fill,
+                                        width: width,
+                                        height: height,
                                       ),
                               ),
                             ),
