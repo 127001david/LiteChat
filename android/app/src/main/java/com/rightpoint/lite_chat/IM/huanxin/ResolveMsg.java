@@ -1,5 +1,6 @@
 package com.rightpoint.lite_chat.IM.huanxin;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.hyphenate.chat.EMImageMessageBody;
@@ -36,9 +37,15 @@ public class ResolveMsg {
             }
             case IMAGE: {
                 EMImageMessageBody msgBody = (EMImageMessageBody) msg.getBody();
+                String imgRemoteUrl = msgBody.getRemoteUrl();
+                String thumbnailUrl = msgBody.getThumbnailUrl();
+                Uri imgLocalUri = msgBody.getLocalUri();
+                Uri thumbnailLocalUri = msgBody.thumbnailLocalUri();
+
                 message.setType(Msg.TYPE_IMG)
-                        .setImgUrl(msgBody.getRemoteUrl())
-                        .setThumbUrl(msgBody.getThumbnailUrl())
+                        .setImgUrl(null == imgLocalUri ? imgRemoteUrl : imgLocalUri.getPath())
+                        .setThumbUrl(null == thumbnailLocalUri ? thumbnailUrl :
+                                thumbnailLocalUri.getPath())
                         .setWidth(msgBody.getWidth())
                         .setHeight(msgBody.getHeight())
                         .setOriginal(msgBody.isSendOriginalImage());

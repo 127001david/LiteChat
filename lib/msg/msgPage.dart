@@ -178,6 +178,25 @@ class MsgPageState extends State<MsgPageRoute>
                       Msg msgImg = msgContainer.msg as Msg;
 
                       if (username == msgImg.from) {
+                        double width = 0;
+                        double height = 0;
+                        if (msgImg.width > msgImg.height &&
+                            msgImg.width > 150) {
+                          width = 150;
+                          height = (msgImg.height.toDouble() /
+                              msgImg.width.toDouble()) *
+                              150;
+                        } else if (msgImg.height > msgImg.width &&
+                            msgImg.height > 150) {
+                          height = 150;
+                          width = (msgImg.width.toDouble() /
+                              msgImg.height.toDouble()) *
+                              150;
+                        } else {
+                          width = msgImg.width.toDouble();
+                          height = msgImg.height.toDouble();
+                        }
+
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
@@ -186,9 +205,19 @@ class MsgPageState extends State<MsgPageRoute>
                               margin: EdgeInsets.only(left: 5),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(5),
-                                child: Image.network(
-                                  msgImg.thumbUrl,
-                                  height: 150,
+                                child: msgImg.thumbUrl.startsWith("http")
+                                    ? FadeInImage.assetNetwork(
+                                  placeholder: 'assets/placeholder.png',
+                                  image: msgImg.thumbUrl,
+                                  fit: BoxFit.fill,
+                                  width: width,
+                                  height: height,
+                                )
+                                    : Image.file(
+                                  File(msgImg.thumbUrl),
+                                  fit: BoxFit.fill,
+                                  width: width,
+                                  height: height,
                                 ),
                               ),
                             ),
@@ -349,10 +378,9 @@ class MsgPageState extends State<MsgPageRoute>
       List<dynamic> msgList = await channelConversation
           .invokeMethod('getMsgList', {'username': username});
 
-      print('与${username}的聊天记录：${msgList}');
-
       msgList.forEach((element) {
         Msg msg = msgFromMap(element);
+        print(msg);
         MsgContainer msgContainer = MsgContainer(element['type'], msg);
         _msgList.insert(0, msgContainer);
       });
