@@ -8,6 +8,7 @@ import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/user/userInfo.dart';
 import 'package:lite_chat/widget/animatedText.dart';
+import 'package:lite_chat/widget/morePanel.dart';
 import 'package:lite_chat/widget/msgItem.dart';
 import 'package:lite_chat/widget/msgUserIcon.dart';
 
@@ -45,6 +46,8 @@ class MsgPageState extends State<MsgPageRoute>
 
   Animation<double> _sendButtonAnimation;
   AnimationController _sendButtonAnimController;
+
+  bool _showMorePanel = false;
 
   @override
   void initState() {
@@ -114,6 +117,9 @@ class MsgPageState extends State<MsgPageRoute>
         behavior: HitTestBehavior.translucent,
         onTap: () {
           FocusScope.of(context).requestFocus(FocusNode());
+          setState(() {
+            _showMorePanel = false;
+          });
         },
         child: Column(
           children: <Widget>[
@@ -225,7 +231,10 @@ class MsgPageState extends State<MsgPageRoute>
                       margin: EdgeInsets.only(right: 9),
                       child: GestureDetector(
                         onTap: () {
-                          _showGetPictureDialog();
+//                          _showGetPictureDialog();
+                          setState(() {
+                            _showMorePanel = true;
+                          });
                         },
                         child: Image.asset(
                           'assets/more_panel.png',
@@ -236,9 +245,7 @@ class MsgPageState extends State<MsgPageRoute>
                 ],
               ),
             ),
-            Container(
-              height: 200,
-            )
+            _showMorePanel ? MorePanel() : Container()
           ],
         ),
       ),
