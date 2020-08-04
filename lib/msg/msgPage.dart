@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +8,6 @@ import 'package:lite_chat/user/userInfo.dart';
 import 'package:lite_chat/widget/animatedText.dart';
 import 'package:lite_chat/widget/morePanel.dart';
 import 'package:lite_chat/widget/msgItem.dart';
-import 'package:lite_chat/widget/msgUserIcon.dart';
 
 import '../constant.dart';
 import 'model/baseMsg.dart';
@@ -231,7 +228,6 @@ class MsgPageState extends State<MsgPageRoute>
                       margin: EdgeInsets.only(right: 9),
                       child: GestureDetector(
                         onTap: () {
-//                          _showGetPictureDialog();
                           setState(() {
                             _showMorePanel = true;
                           });
@@ -245,7 +241,9 @@ class MsgPageState extends State<MsgPageRoute>
                 ],
               ),
             ),
-            _showMorePanel ? MorePanel() : Container()
+            _showMorePanel
+                ? MorePanel(_selectPicture, _takePicture, null, null, null)
+                : Container()
           ],
         ),
       ),
@@ -310,38 +308,15 @@ class MsgPageState extends State<MsgPageRoute>
     } on PlatformException catch (e) {}
   }
 
-  void _showGetPictureDialog() {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return SimpleDialog(
-            title: Text('选择照片'),
-            children: <Widget>[
-              SimpleDialogOption(
-                child: Text('相册'),
-                onPressed: () {
-                  _selectPicture();
-                  Navigator.pop(context);
-                },
-              ),
-              SimpleDialogOption(
-                child: Text('拍照'),
-                onPressed: () {
-                  _takePicture();
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          );
-        });
-  }
-
   Future _takePicture() async {
     var image = await ImagePicker().getImage(source: ImageSource.camera);
     if (null != image) {
       print('图片路径${image.path}');
       _sendImg(image.path);
     }
+    setState(() {
+      _showMorePanel = false;
+    });
   }
 
   Future _selectPicture() async {
@@ -350,5 +325,8 @@ class MsgPageState extends State<MsgPageRoute>
       print('图片路径${image.path}');
       _sendImg(image.path);
     }
+    setState(() {
+      _showMorePanel = false;
+    });
   }
 }

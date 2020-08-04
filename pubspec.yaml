@@ -57,6 +57,11 @@ flutter:
     - assets/white_bubble.png
     - assets/yellow_bubble.png
     - assets/placeholder.png
+    - assets/album.png
+    - assets/location.png
+    - assets/redpacket.png
+    - assets/takephoto.png
+    - assets/videocall.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
