@@ -7,6 +7,7 @@ import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMVoiceMessageBody;
 import com.rightpoint.lite_chat.IM.IMsgSender;
 import com.rightpoint.lite_chat.IM.Msg;
 
@@ -77,8 +78,45 @@ public class HXSender implements IMsgSender {
     }
 
     @Override
-    public void sendVoice(String to, boolean isGroup, int length, Uri voiceUri) {
+    public void sendVoice(String to, boolean isGroup, int length, Uri voiceUri,
+                          MessageStatusCallback callback) {
+        EMMessage message = EMMessage.createVoiceSendMessage(voiceUri, length, to);
+        if (isGroup) {
+            message.setChatType(EMMessage.ChatType.GroupChat);
+        }
 
+        message.setMessageStatusCallback(new EMCallBack() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "onSuccess: ");
+                EMVoiceMessageBody voiceBody = (EMVoiceMessageBody) message.getBody();
+                String voiceRemoteUrl = voiceBody.getRemoteUrl();
+                Uri voiceLocalUri = voiceBody.getLocalUri();
+
+                if (null != callback) {
+                    callback.onSuccess(new Msg()
+                            .setUsername(to)
+                            .setTo(to)
+                            .setFrom(message.getFrom())
+                            .setTime(message.getMsgTime())
+                            .setVoiceUri(voiceLocalUri.getPath())
+                            .setLength(length)
+                    );
+                }
+            }
+
+            @Override
+            public void onError(int code, String error) {
+                Log.d(TAG, "onError: " + error);
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+                Log.d(TAG, "onProgress: " + progress);
+            }
+        });
+
+        EMClient.getInstance().chatManager().sendMessage(message);
     }
 
     @Override

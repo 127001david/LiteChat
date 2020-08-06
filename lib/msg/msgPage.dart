@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_plugin_record/flutter_plugin_record.dart';
+import 'package:flutter_plugin_record/play_state.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/msg.dart';
@@ -8,6 +12,7 @@ import 'package:lite_chat/user/userInfo.dart';
 import 'package:lite_chat/widget/animatedText.dart';
 import 'package:lite_chat/widget/morePanel.dart';
 import 'package:lite_chat/widget/msgItem.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../constant.dart';
 import 'model/baseMsg.dart';
@@ -38,6 +43,7 @@ class MsgPageState extends State<MsgPageRoute>
   final List<MsgContainer> _msgList = [];
 
   TextEditingController _msgTextFieldController = TextEditingController();
+  FocusNode _msgTextFieldFocusNode = FocusNode();
 
   bool _hasTxt = false;
 
@@ -45,6 +51,14 @@ class MsgPageState extends State<MsgPageRoute>
   AnimationController _sendButtonAnimController;
 
   bool _showMorePanel = false;
+
+  bool _resizeToAvoidBottomInset = true;
+
+  bool _voice = false;
+
+  FlutterPluginRecord _recordPlugin = FlutterPluginRecord();
+  String _recordPath;
+  int _recordTime;
 
   @override
   void initState() {
@@ -54,6 +68,8 @@ class MsgPageState extends State<MsgPageRoute>
         AnimationController(duration: Duration(milliseconds: 100), vsync: this);
     _sendButtonAnimation =
         Tween(begin: 0.5, end: 1.0).animate(_sendButtonAnimController);
+
+    _recordPlugin.init();
 
     _getMsgList();
 
@@ -74,6 +90,14 @@ class MsgPageState extends State<MsgPageRoute>
         setState(() {});
       }
     };
+
+    _msgTextFieldFocusNode.addListener(() {
+      if (_msgTextFieldFocusNode.hasFocus) {
+        setState(() {
+          _showMorePanel = false;
+        });
+      }
+    });
 
     _msgTextFieldController.addListener(() {
       _hasTxt = _msgTextFieldController.text != null &&
@@ -104,6 +128,7 @@ class MsgPageState extends State<MsgPageRoute>
     );
 
     return Scaffold(
+      resizeToAvoidBottomInset: _resizeToAvoidBottomInset,
       appBar: AppBar(title: Text(username), actions: <Widget>[
         Container(
           margin: EdgeInsets.only(right: 12),
@@ -145,7 +170,9 @@ class MsgPageState extends State<MsgPageRoute>
                       }
                     }
 
-                    return ListTile();
+                    return ListTile(
+                      title: Text(msgContainer.msgType),
+                    );
                   },
                   separatorBuilder: (BuildContext context, int index) {
                     return spaceDivider;
@@ -169,9 +196,13 @@ class MsgPageState extends State<MsgPageRoute>
                     height: 24,
                     margin: EdgeInsets.only(left: 10, right: 9),
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        setState(() {
+                          _voice = !_voice;
+                        });
+                      },
                       child: Image.asset(
-                        'assets/laba.png',
+                        _voice ? 'assets/keyboard.png' : 'assets/laba.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -183,23 +214,64 @@ class MsgPageState extends State<MsgPageRoute>
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.all(Radius.circular(5))),
-                    child: TextField(
-                      autofocus: false,
-                      minLines: 1,
-                      maxLines: 4,
-                      cursorColor: Color.fromARGB(255, 7, 193, 96),
-                      cursorWidth: 2,
-                      controller: _msgTextFieldController,
-                      decoration: InputDecoration(
-                          contentPadding: EdgeInsets.all(0),
-                          isDense: true,
-                          focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white)),
-                          disabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white)),
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white))),
-                    ),
+                    child: _voice
+                        ? Center(
+                            child: GestureDetector(
+                              onTapDown: (detail) async {
+                                print('detail:$detail');
+                                Directory d =
+                                    await getApplicationDocumentsDirectory();
+                                _recordTime =
+                                    DateTime.now().millisecondsSinceEpoch;
+                                _recordPlugin.response.listen((event) {
+                                  print('recordState:$event');
+                                  if ('onStop' == event.msg) {
+                                    _recordPath = event.path;
+                                    _recordTime = event.audioTimeLength ~/ 1000;
+                                    print(
+                                        '_recordPath:$_recordPath     _recordTime:$_recordTime');
+                                    _sendVoice(_recordPath, _recordTime);
+                                  }
+                                });
+                                _recordPlugin.start();
+                              },
+                              onTapUp: (detail) {
+                                _recordPlugin.stop();
+                              },
+                              onTapCancel: () {
+                                print('record cancel');
+                                _recordPlugin.stop();
+                              },
+                              child: Text(
+                                '按住 说话',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    color: Color.fromARGB(255, 25, 25, 25)),
+                              ),
+                            ),
+                          )
+                        : TextField(
+                            autofocus: false,
+                            minLines: 1,
+                            maxLines: 4,
+                            cursorColor: Color.fromARGB(255, 7, 193, 96),
+                            cursorWidth: 2,
+                            focusNode: _msgTextFieldFocusNode,
+                            controller: _msgTextFieldController,
+                            decoration: InputDecoration(
+                                contentPadding: EdgeInsets.all(0),
+                                isDense: true,
+                                focusedBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.white)),
+                                disabledBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.white)),
+                                enabledBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.white))),
+                          ),
                   )),
                   Container(
                     width: 24,
@@ -231,6 +303,8 @@ class MsgPageState extends State<MsgPageRoute>
                           setState(() {
                             _showMorePanel = true;
                           });
+
+                          _msgTextFieldFocusNode.unfocus();
                         },
                         child: Image.asset(
                           'assets/more_panel.png',
@@ -299,6 +373,27 @@ class MsgPageState extends State<MsgPageRoute>
       print('图片已发送：$msg');
 
       MsgContainer msgContainer = MsgContainer(type_img, msg);
+
+      _msgList.insert(0, msgContainer);
+
+      bus.emit(username, map);
+
+      setState(() {});
+    } on PlatformException catch (e) {}
+  }
+
+  Future _sendVoice(String path, int length) async {
+    try {
+      Map map = await channelCallNative.invokeMethod('sendVoice', {
+        'voicePath': path,
+        'length': length.toString(),
+        'username': username
+      });
+
+      Msg msg = msgFromMap(map);
+      print('语音已发送：$msg');
+
+      MsgContainer msgContainer = MsgContainer(type_voice, msg);
 
       _msgList.insert(0, msgContainer);
 

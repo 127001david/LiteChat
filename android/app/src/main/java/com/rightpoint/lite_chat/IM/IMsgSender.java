@@ -25,7 +25,7 @@ public interface IMsgSender {
      * @param callback 消息发送状态回调
      */
     void sendImg(String to, boolean isGroup, boolean original, Uri imgUri,
-                MessageStatusCallback callback);
+                 MessageStatusCallback callback);
 
     /**
      * 发送语音
@@ -34,7 +34,8 @@ public interface IMsgSender {
      * @param length 语音时长 秒
      * @param voiceUri 语音文件Uri
      */
-    void sendVoice(String to, boolean isGroup, int length, Uri voiceUri);
+    void sendVoice(String to, boolean isGroup, int length, Uri voiceUri,
+                   MessageStatusCallback callback);
 
     /**
      * 发送视频

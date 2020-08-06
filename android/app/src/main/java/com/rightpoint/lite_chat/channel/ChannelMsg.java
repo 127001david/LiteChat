@@ -63,6 +63,7 @@ public class ChannelMsg {
                     String isGroup = call.argument("isGroup");
 
                     if (TextUtils.isEmpty(imgPath) || TextUtils.isEmpty(username)) {
+                        result.error("404", "imgPath or username is null", null);
                         return;
                     }
 
@@ -89,6 +90,41 @@ public class ChannelMsg {
 
                                 }
                             });
+                } else if ("sendVoice".equals(call.method)) {
+                    String voicePath = call.argument("voicePath");
+                    String username = call.argument("username");
+                    String isGroup = call.argument("isGroup");
+                    String length = call.argument("length");
+
+                    if (TextUtils.isEmpty(voicePath) || TextUtils.isEmpty(username) || TextUtils.isEmpty(length)) {
+                        result.error("404", "voicePath length or username is null", null);
+                        return;
+                    }
+
+                    assert length != null;
+                    sender.sendVoice(username, !TextUtils.isEmpty(isGroup),
+                            Integer.parseInt(length), Uri.parse(voicePath),
+                            new IMsgSender.MessageStatusCallback() {
+                        @Override
+                        public void onSuccess(Msg msg) {
+                            activity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    result.success(msg);
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onError(int code, String error) {
+
+                        }
+
+                        @Override
+                        public void onProgress(int progress, String status) {
+
+                        }
+                    });
                 }
             }
         });

@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMTextMessageBody;
+import com.hyphenate.chat.EMVoiceMessageBody;
 import com.rightpoint.lite_chat.IM.Msg;
 
 /**
@@ -49,6 +50,18 @@ public class ResolveMsg {
                         .setWidth(msgBody.getWidth())
                         .setHeight(msgBody.getHeight())
                         .setOriginal(msgBody.isSendOriginalImage());
+                break;
+            }
+            case VOICE: {
+                EMVoiceMessageBody voiceBody = (EMVoiceMessageBody) msg.getBody();
+                String voiceRemoteUrl = voiceBody.getRemoteUrl();
+                Uri voiceLocalUri = voiceBody.getLocalUri();
+
+                message.setType(Msg.TYPE_VOICE)
+                        .setVoiceUri(null == voiceLocalUri ? voiceRemoteUrl :
+                                voiceLocalUri.getPath())
+                        .setLength(voiceBody.getLength());
+
                 break;
             }
             default:
