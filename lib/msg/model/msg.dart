@@ -9,10 +9,15 @@ Msg msgFromMap(Map map) {
   switch (map['type']) {
     case 'type_txt':
       msg = Msg(
-          from: map['from'], to: map['to'], time: map['time'], txt: map['txt']);
+          type: map['type'],
+          from: map['from'],
+          to: map['to'],
+          time: map['time'],
+          txt: map['txt']);
       break;
     case 'type_img':
       msg = Msg(
+          type: map['type'],
           from: map['from'],
           to: map['to'],
           time: map['time'],
@@ -25,6 +30,7 @@ Msg msgFromMap(Map map) {
       break;
     case 'type_voice':
       msg = Msg(
+          type: map['type'],
           from: map['from'],
           to: map['to'],
           time: map['time'],
@@ -41,6 +47,7 @@ Msg msgFromMap(Map map) {
 Map msgToMap(Msg data) {
   Map msg = Map();
 
+  msg['type'] = data.type;
   msg['username'] = data.username;
   msg['from'] = data.from;
   msg['to'] = data.to;
@@ -94,7 +101,8 @@ Map msgToMap(Msg data) {
 
 class Msg implements BaseMsg {
   Msg(
-      {this.username,
+      {this.type,
+      this.username,
       this.from,
       this.to,
       this.time,
@@ -109,6 +117,7 @@ class Msg implements BaseMsg {
       this.videoUri,
       this.fileUri});
 
+  String type;
   String username;
   String from;
   String to;
@@ -126,6 +135,6 @@ class Msg implements BaseMsg {
 
   @override
   String toString() {
-    return 'msg from:$from, to:$to, time$time, txt:$txt, imgUrl:$imgUrl, thumbUrl:$thumbUrl, width:$width, height:$height, voiceUri:$voiceUri, videoUri:$videoUri, fileUri:$fileUri';
+    return 'msg type:$type, from:$from, to:$to, time$time, txt:$txt, imgUrl:$imgUrl, thumbUrl:$thumbUrl, width:$width, height:$height, voiceUri:$voiceUri, videoUri:$videoUri, fileUri:$fileUri';
   }
 }

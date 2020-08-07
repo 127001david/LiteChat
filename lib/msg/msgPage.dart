@@ -168,6 +168,14 @@ class MsgPageState extends State<MsgPageRoute>
                       } else {
                         return MyImg(msgImg);
                       }
+                    } else if (type_voice == msgContainer.msgType) {
+                      Msg msgVoice = msgContainer.msg as Msg;
+
+                      if (username == msgVoice.from) {
+                        return OtherVoice(msgVoice.length.toString());
+                      } else {
+                        return MyVoice(msgVoice.length.toString());
+                      }
                     }
 
                     return ListTile(
