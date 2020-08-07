@@ -10,6 +10,7 @@ Msg msgFromMap(Map map) {
     case 'type_txt':
       msg = Msg(
           type: map['type'],
+          username: map['username'],
           from: map['from'],
           to: map['to'],
           time: map['time'],
@@ -18,6 +19,7 @@ Msg msgFromMap(Map map) {
     case 'type_img':
       msg = Msg(
           type: map['type'],
+          username: map['username'],
           from: map['from'],
           to: map['to'],
           time: map['time'],
@@ -31,6 +33,7 @@ Msg msgFromMap(Map map) {
     case 'type_voice':
       msg = Msg(
           type: map['type'],
+          username: map['username'],
           from: map['from'],
           to: map['to'],
           time: map['time'],
@@ -135,6 +138,6 @@ class Msg implements BaseMsg {
 
   @override
   String toString() {
-    return 'msg type:$type, from:$from, to:$to, time$time, txt:$txt, imgUrl:$imgUrl, thumbUrl:$thumbUrl, width:$width, height:$height, voiceUri:$voiceUri, videoUri:$videoUri, fileUri:$fileUri';
+    return 'msg type:$type, from:$from, to:$to, time:$time, txt:$txt, imgUrl:$imgUrl, thumbUrl:$thumbUrl, width:$width, height:$height, voiceUri:$voiceUri, length:$length, videoUri:$videoUri, fileUri:$fileUri';
   }
 }

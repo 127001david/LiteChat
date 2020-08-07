@@ -123,7 +123,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
                                   fontSize: 11,
                                   color: Color.fromARGB(255, 178, 178, 178)))
                         else
-                          Text('[etc]',
+                          Text('[${msg['type']}]',
                               style: TextStyle(
                                   fontSize: 11,
                                   color: Color.fromARGB(255, 178, 178, 178)))

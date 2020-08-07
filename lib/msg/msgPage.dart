@@ -40,7 +40,9 @@ class MsgPageState extends State<MsgPageRoute>
   MsgPageState(this.username);
 
   final String username;
-  final List<MsgContainer> _msgList = [];
+  final List<Msg> _msgList = [];
+
+  EventCallback _receiveMsg;
 
   TextEditingController _msgTextFieldController = TextEditingController();
   FocusNode _msgTextFieldFocusNode = FocusNode();
@@ -73,16 +75,15 @@ class MsgPageState extends State<MsgPageRoute>
 
     _getMsgList();
 
-    bus.on(username, (e) {
+    _receiveMsg = (e) {
       final msg = e as Map;
-      if ('type_txt' == msg['type']) {
-        print('收到一条新消息：from ${msg['from']}, txt ${msg['txt']}');
-        MsgContainer baseMsg = MsgContainer(type_txt, msgFromMap(msg));
-        _msgList.insert(0, baseMsg);
-      }
+      print('收到一条新消息：msg');
+      _msgList.insert(0, msgFromMap(msg));
 
       setState(() {});
-    });
+    };
+
+    bus.on(username, _receiveMsg);
 
     AnimationStatusListener listener = (status) {
       print(status);
@@ -110,6 +111,17 @@ class MsgPageState extends State<MsgPageRoute>
       } else {
         _sendButtonAnimController.addStatusListener(listener);
         _sendButtonAnimController.reverse();
+      }
+    });
+
+    _recordPlugin.response.listen((event) {
+      print('recordState:$event');
+      if ('onStop' == event.msg) {
+        _recordPath = event.path;
+        _recordTime =
+            (DateTime.now().millisecondsSinceEpoch - _recordTime) ~/ 1000;
+        print('_recordPath:$_recordPath     _recordTime:$_recordTime');
+        _sendVoice(_recordPath, _recordTime);
       }
     });
   }
@@ -152,34 +164,29 @@ class MsgPageState extends State<MsgPageRoute>
                   itemCount: _msgList.length,
                   physics: BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
-                    MsgContainer msgContainer = _msgList[index];
-                    if (type_txt == msgContainer.msgType) {
-                      Msg msgTxt = msgContainer.msg as Msg;
-                      if (username == msgTxt.from) {
-                        return OtherTxt(msgTxt);
+                    Msg msg = _msgList[index];
+                    if (type_txt == msg.type) {
+                      if (username == msg.from) {
+                        return OtherTxt(msg);
                       } else {
-                        return MyTxt(msgTxt);
+                        return MyTxt(msg);
                       }
-                    } else if (type_img == msgContainer.msgType) {
-                      Msg msgImg = msgContainer.msg as Msg;
-
-                      if (username == msgImg.from) {
-                        return OtherImg(msgImg);
+                    } else if (type_img == msg.type) {
+                      if (username == msg.from) {
+                        return OtherImg(msg);
                       } else {
-                        return MyImg(msgImg);
+                        return MyImg(msg);
                       }
-                    } else if (type_voice == msgContainer.msgType) {
-                      Msg msgVoice = msgContainer.msg as Msg;
-
-                      if (username == msgVoice.from) {
-                        return OtherVoice(msgVoice.length.toString());
+                    } else if (type_voice == msg.type) {
+                      if (username == msg.from) {
+                        return OtherVoice(msg.length.toString());
                       } else {
-                        return MyVoice(msgVoice.length.toString());
+                        return MyVoice(msg.length.toString());
                       }
                     }
 
                     return ListTile(
-                      title: Text(msgContainer.msgType),
+                      title: Text(msg.type),
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) {
@@ -231,16 +238,7 @@ class MsgPageState extends State<MsgPageRoute>
                                     await getApplicationDocumentsDirectory();
                                 _recordTime =
                                     DateTime.now().millisecondsSinceEpoch;
-                                _recordPlugin.response.listen((event) {
-                                  print('recordState:$event');
-                                  if ('onStop' == event.msg) {
-                                    _recordPath = event.path;
-                                    _recordTime = event.audioTimeLength ~/ 1000;
-                                    print(
-                                        '_recordPath:$_recordPath     _recordTime:$_recordTime');
-                                    _sendVoice(_recordPath, _recordTime);
-                                  }
-                                });
+
                                 _recordPlugin.start();
                               },
                               onTapUp: (detail) {
@@ -340,35 +338,29 @@ class MsgPageState extends State<MsgPageRoute>
       msgList.forEach((element) {
         Msg msg = msgFromMap(element);
         print(msg);
-        MsgContainer msgContainer = MsgContainer(element['type'], msg);
-        _msgList.insert(0, msgContainer);
+        _msgList.insert(0, msg);
       });
 
       setState(() {});
     } on PlatformException catch (e) {}
   }
 
-  Future _sendTxt(String msg) async {
+  Future _sendTxt(String txt) async {
     try {
       await channelCallNative
-          .invokeMethod('sendTxt', {'txt': msg, 'username': username});
+          .invokeMethod('sendTxt', {'txt': txt, 'username': username});
 
-      Msg msgTxt = Msg(
+      Msg msg = Msg(
+          type: type_txt,
           username: username,
           from: loginUser,
           to: username,
           time: new DateTime.now().millisecondsSinceEpoch,
-          txt: msg);
+          txt: txt);
 
-      MsgContainer msgContainer = MsgContainer(type_txt, msgTxt);
+      addMsgToList(msg);
 
-      _msgList.insert(0, msgContainer);
-
-      bus.emit(username, msgToMap(msgTxt));
-
-      print(msg);
-
-      setState(() {});
+      print('文字已发送:$txt');
     } on PlatformException catch (e) {}
   }
 
@@ -380,13 +372,7 @@ class MsgPageState extends State<MsgPageRoute>
       Msg msg = msgFromMap(map);
       print('图片已发送：$msg');
 
-      MsgContainer msgContainer = MsgContainer(type_img, msg);
-
-      _msgList.insert(0, msgContainer);
-
-      bus.emit(username, map);
-
-      setState(() {});
+      addMsgToList(msg);
     } on PlatformException catch (e) {}
   }
 
@@ -401,14 +387,18 @@ class MsgPageState extends State<MsgPageRoute>
       Msg msg = msgFromMap(map);
       print('语音已发送：$msg');
 
-      MsgContainer msgContainer = MsgContainer(type_voice, msg);
-
-      _msgList.insert(0, msgContainer);
-
-      bus.emit(username, map);
-
-      setState(() {});
+      addMsgToList(msg);
     } on PlatformException catch (e) {}
+  }
+
+  void addMsgToList(Msg msg) {
+    _msgList.insert(0, msg);
+
+    bus.off(username, _receiveMsg);
+    bus.emit(username, msgToMap(msg));
+    bus.on(username, _receiveMsg);
+
+    setState(() {});
   }
 
   Future _takePicture() async {

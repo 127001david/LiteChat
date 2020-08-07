@@ -95,6 +95,7 @@ public class HXSender implements IMsgSender {
 
                 if (null != callback) {
                     callback.onSuccess(new Msg()
+                            .setType(Msg.TYPE_VOICE)
                             .setUsername(to)
                             .setTo(to)
                             .setFrom(message.getFrom())
