@@ -62,35 +62,40 @@ class MyTxt extends StatelessWidget {
 }
 
 class OtherVoice extends StatelessWidget {
-  OtherVoice(this.length);
+  OtherVoice(this.length, this.onTap);
 
-  final String length;
+  final int length;
+  final GestureTapCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
         OtherIcon(),
-        Container(
-          margin: EdgeInsets.only(left: 5),
-          padding: EdgeInsets.only(left: 16, top: 12, right: 12, bottom: 6),
-          constraints:
-              BoxConstraints(minWidth: 43.0, maxWidth: 240.0, minHeight: 37),
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  centerSlice: Rect.fromLTWH(5, 25, 28, 7),
-                  image: AssetImage('assets/white_bubble.png'))),
-          child: Text.rich(
-            TextSpan(children: [
-              WidgetSpan(
-                  child: Image.asset(
-                'assets/voice_other.png',
-                width: 10,
-                height: 15,
-              )),
-              TextSpan(text: ' $length″')
-            ]),
-            style: TextStyle(fontSize: 14.0),
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: (40 + length * 20).toDouble(),
+            margin: EdgeInsets.only(left: 5),
+            padding: EdgeInsets.only(left: 16, top: 12, right: 12, bottom: 6),
+            constraints:
+                BoxConstraints(minWidth: 43.0, maxWidth: 140.0, minHeight: 39),
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    centerSlice: Rect.fromLTWH(5, 25, 28, 7),
+                    image: AssetImage('assets/white_bubble.png'))),
+            child: Text.rich(
+              TextSpan(children: [
+                WidgetSpan(
+                    child: Image.asset(
+                  'assets/voice_other.png',
+                  width: 10,
+                  height: 15,
+                )),
+                TextSpan(text: ' $length″')
+              ]),
+              style: TextStyle(fontSize: 14.0),
+            ),
           ),
         ),
       ],
@@ -99,9 +104,10 @@ class OtherVoice extends StatelessWidget {
 }
 
 class MyVoice extends StatelessWidget {
-  MyVoice(this.length);
+  MyVoice(this.length, this.onTap);
 
-  final String length;
+  final int length;
+  final GestureTapCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -109,26 +115,30 @@ class MyVoice extends StatelessWidget {
       textDirection: TextDirection.rtl,
       children: <Widget>[
         MyIcon(),
-        Container(
-          margin: EdgeInsets.only(right: 5),
-          padding: EdgeInsets.only(left: 12, top: 12, right: 16, bottom: 6),
-          constraints:
-              BoxConstraints(minWidth: 43.0, maxWidth: 240.0, minHeight: 39),
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  centerSlice: Rect.fromLTWH(5, 25, 28, 7),
-                  image: AssetImage('assets/yellow_bubble.png'))),
-          child: Text.rich(
-              TextSpan(children: [
-                TextSpan(text: '$length″ ', style: TextStyle(fontSize: 14.0)),
-                WidgetSpan(
-                    child: Image.asset(
-                  'assets/voice_my.png',
-                  width: 10,
-                  height: 15,
-                ))
-              ]),
-              textAlign: TextAlign.left),
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: (40 + length * 20).toDouble(),
+            margin: EdgeInsets.only(right: 5),
+            padding: EdgeInsets.only(left: 12, top: 12, right: 16, bottom: 6),
+            constraints:
+                BoxConstraints(minWidth: 43.0, maxWidth: 140.0, minHeight: 39),
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    centerSlice: Rect.fromLTWH(5, 25, 28, 7),
+                    image: AssetImage('assets/yellow_bubble.png'))),
+            child: Text.rich(
+                TextSpan(children: [
+                  TextSpan(text: '$length″ ', style: TextStyle(fontSize: 14.0)),
+                  WidgetSpan(
+                      child: Image.asset(
+                    'assets/voice_my.png',
+                    width: 10,
+                    height: 15,
+                  ))
+                ]),
+                textAlign: TextAlign.right),
+          ),
         ),
       ],
     );

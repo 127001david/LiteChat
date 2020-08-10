@@ -27,8 +27,7 @@ Msg msgFromMap(Map map) {
           imgUrl: map['imgUrl'],
           thumbUrl: map['thumbUrl'],
           width: map['width'],
-          height: map['height'],
-          txt: map['imgUri']);
+          height: map['height']);
       break;
     case 'type_voice':
       msg = Msg(
@@ -37,7 +36,7 @@ Msg msgFromMap(Map map) {
           from: map['from'],
           to: map['to'],
           time: map['time'],
-          txt: map['voiceUri'],
+          voiceUri: map['voiceUri'],
           length: map['length']);
       break;
     default:

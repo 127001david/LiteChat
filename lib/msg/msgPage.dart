@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_plugin_record/flutter_plugin_record.dart';
 import 'package:flutter_plugin_record/play_state.dart';
+import 'package:flutter_plugin_record/voice_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/msg.dart';
@@ -12,6 +14,7 @@ import 'package:lite_chat/user/userInfo.dart';
 import 'package:lite_chat/widget/animatedText.dart';
 import 'package:lite_chat/widget/morePanel.dart';
 import 'package:lite_chat/widget/msgItem.dart';
+import 'package:lite_chat/widget/recordVoice.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../constant.dart';
@@ -49,6 +52,8 @@ class MsgPageState extends State<MsgPageRoute>
 
   bool _hasTxt = false;
 
+  String baseVoiceDir;
+
   Animation<double> _sendButtonAnimation;
   AnimationController _sendButtonAnimController;
 
@@ -57,8 +62,7 @@ class MsgPageState extends State<MsgPageRoute>
   bool _resizeToAvoidBottomInset = true;
 
   bool _voice = false;
-
-  FlutterPluginRecord _recordPlugin = FlutterPluginRecord();
+  AudioPlayer _audioPlayer = AudioPlayer();
   String _recordPath;
   int _recordTime;
 
@@ -71,9 +75,9 @@ class MsgPageState extends State<MsgPageRoute>
     _sendButtonAnimation =
         Tween(begin: 0.5, end: 1.0).animate(_sendButtonAnimController);
 
-    _recordPlugin.init();
-
     _getMsgList();
+
+    _initRecordPath();
 
     _receiveMsg = (e) {
       final msg = e as Map;
@@ -113,17 +117,6 @@ class MsgPageState extends State<MsgPageRoute>
         _sendButtonAnimController.reverse();
       }
     });
-
-    _recordPlugin.response.listen((event) {
-      print('recordState:$event');
-      if ('onStop' == event.msg) {
-        _recordPath = event.path;
-        _recordTime =
-            (DateTime.now().millisecondsSinceEpoch - _recordTime) ~/ 1000;
-        print('_recordPath:$_recordPath     _recordTime:$_recordTime');
-        _sendVoice(_recordPath, _recordTime);
-      }
-    });
   }
 
   @override
@@ -155,179 +148,200 @@ class MsgPageState extends State<MsgPageRoute>
             _showMorePanel = false;
           });
         },
-        child: Column(
+        child: Stack(
           children: <Widget>[
-            Expanded(
-              child: DecoratedBox(
-                child: ListView.separated(
-                  reverse: true,
-                  itemCount: _msgList.length,
-                  physics: BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    Msg msg = _msgList[index];
-                    if (type_txt == msg.type) {
-                      if (username == msg.from) {
-                        return OtherTxt(msg);
-                      } else {
-                        return MyTxt(msg);
-                      }
-                    } else if (type_img == msg.type) {
-                      if (username == msg.from) {
-                        return OtherImg(msg);
-                      } else {
-                        return MyImg(msg);
-                      }
-                    } else if (type_voice == msg.type) {
-                      if (username == msg.from) {
-                        return OtherVoice(msg.length.toString());
-                      } else {
-                        return MyVoice(msg.length.toString());
-                      }
-                    }
+            Column(
+              children: <Widget>[
+                Expanded(
+                  child: DecoratedBox(
+                    child: ListView.separated(
+                      reverse: true,
+                      itemCount: _msgList.length,
+                      physics: BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        Msg msg = _msgList[index];
+                        if (type_txt == msg.type) {
+                          if (username == msg.from) {
+                            return OtherTxt(msg);
+                          } else {
+                            return MyTxt(msg);
+                          }
+                        } else if (type_img == msg.type) {
+                          if (username == msg.from) {
+                            return OtherImg(msg);
+                          } else {
+                            return MyImg(msg);
+                          }
+                        } else if (type_voice == msg.type) {
+                          if (username == msg.from) {
+                            return OtherVoice(msg.length, () {
+                              print(msg.voiceUri);
+                              _audioPlayer.play(msg.voiceUri);
+                              if (msg.voiceUri.startsWith('http')) {
+                                _audioPlayer.play(msg.voiceUri, isLocal: false);
+                              } else {
+                                _audioPlayer.play(msg.voiceUri);
+                              }
+                            });
+                          } else {
+                            return MyVoice(msg.length, () {
+                              print(msg.voiceUri);
+                              _audioPlayer.play(msg.voiceUri);
+                              if (msg.voiceUri.startsWith('http')) {
+                                _audioPlayer.play(msg.voiceUri, isLocal: false);
+                              } else {
+                                _audioPlayer.play(msg.voiceUri);
+                              }
+                            });
+                          }
+                        }
 
-                    return ListTile(
-                      title: Text(msg.type),
-                    );
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    return spaceDivider;
-                  },
-                ),
-                decoration:
-                    BoxDecoration(color: Color.fromARGB(255, 237, 237, 237)),
-              ),
-            ),
-            Container(
-              height: 0.5,
-              color: Color.fromARGB(255, 213, 213, 213),
-            ),
-            Container(
-              constraints: BoxConstraints(minHeight: 52),
-              color: Color.fromARGB(255, 247, 247, 247),
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    width: 24,
-                    height: 24,
-                    margin: EdgeInsets.only(left: 10, right: 9),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _voice = !_voice;
-                        });
+                        return ListTile(
+                          title: Text(msg.type),
+                        );
                       },
-                      child: Image.asset(
-                        _voice ? 'assets/keyboard.png' : 'assets/laba.png',
-                        fit: BoxFit.cover,
-                      ),
+                      separatorBuilder: (BuildContext context, int index) {
+                        return spaceDivider;
+                      },
                     ),
-                  ),
-                  Expanded(
-                      child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 7),
-                    padding: EdgeInsets.all(7),
                     decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(5))),
-                    child: _voice
-                        ? Center(
-                            child: GestureDetector(
-                              onTapDown: (detail) async {
-                                print('detail:$detail');
-                                Directory d =
-                                    await getApplicationDocumentsDirectory();
-                                _recordTime =
-                                    DateTime.now().millisecondsSinceEpoch;
-
-                                _recordPlugin.start();
-                              },
-                              onTapUp: (detail) {
-                                _recordPlugin.stop();
-                              },
-                              onTapCancel: () {
-                                print('record cancel');
-                                _recordPlugin.stop();
-                              },
-                              child: Text(
-                                '按住 说话',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: Color.fromARGB(255, 25, 25, 25)),
-                              ),
-                            ),
-                          )
-                        : TextField(
-                            autofocus: false,
-                            minLines: 1,
-                            maxLines: 4,
-                            cursorColor: Color.fromARGB(255, 7, 193, 96),
-                            cursorWidth: 2,
-                            focusNode: _msgTextFieldFocusNode,
-                            controller: _msgTextFieldController,
-                            decoration: InputDecoration(
-                                contentPadding: EdgeInsets.all(0),
-                                isDense: true,
-                                focusedBorder: UnderlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: Colors.white)),
-                                disabledBorder: UnderlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: Colors.white)),
-                                enabledBorder: UnderlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: Colors.white))),
-                          ),
-                  )),
-                  Container(
-                    width: 24,
-                    height: 24,
-                    margin: EdgeInsets.only(left: 10, right: 12),
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: Image.asset(
-                        'assets/emoji.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                        color: Color.fromARGB(255, 237, 237, 237)),
                   ),
-                  if (_hasTxt)
-                    AnimatedText(
-                      animation: _sendButtonAnimation,
-                      onTap: () {
-                        _sendTxt(_msgTextFieldController.text.trim());
-                        _msgTextFieldController.clear();
-                      },
-                    )
-                  else
-                    Container(
-                      width: 24,
-                      height: 24,
-                      margin: EdgeInsets.only(right: 9),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _showMorePanel = true;
-                          });
-
-                          _msgTextFieldFocusNode.unfocus();
-                        },
-                        child: Image.asset(
-                          'assets/more_panel.png',
-                          fit: BoxFit.cover,
+                ),
+                Container(
+                  height: 0.5,
+                  color: Color.fromARGB(255, 213, 213, 213),
+                ),
+                Container(
+                  constraints: BoxConstraints(minHeight: 52),
+                  color: Color.fromARGB(255, 247, 247, 247),
+                  child: Row(
+                    children: <Widget>[
+                      Container(
+                        width: 24,
+                        height: 24,
+                        margin: EdgeInsets.only(left: 10, right: 9),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _voice = !_voice;
+                            });
+                          },
+                          child: Image.asset(
+                            _voice ? 'assets/keyboard.png' : 'assets/laba.png',
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
+                      Expanded(
+                          child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 7),
+                        padding: EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                        child: _voice
+                            ? RecordVoice(
+                                recordPath: '$baseVoiceDir/$_recordTime.wav',
+                                startRecord: () async {
+                                  _recordTime =
+                                      DateTime.now().millisecondsSinceEpoch;
+                                },
+                                stopRecord: (path, length) {
+                                  _recordPath = path;
+                                  _recordTime =
+                                      (DateTime.now().millisecondsSinceEpoch -
+                                              _recordTime) ~/
+                                          1000;
+
+                                  print(
+                                      '_recordPath:$_recordPath     _recordTime:$_recordTime');
+                                  _sendVoice(_recordPath, _recordTime);
+                                },
+                              )
+                            : TextField(
+                                autofocus: false,
+                                minLines: 1,
+                                maxLines: 4,
+                                cursorColor: Color.fromARGB(255, 7, 193, 96),
+                                cursorWidth: 2,
+                                focusNode: _msgTextFieldFocusNode,
+                                controller: _msgTextFieldController,
+                                decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.all(0),
+                                    isDense: true,
+                                    focusedBorder: UnderlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white)),
+                                    disabledBorder: UnderlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white)),
+                                    enabledBorder: UnderlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white))),
+                              ),
+                      )),
+                      Container(
+                        width: 24,
+                        height: 24,
+                        margin: EdgeInsets.only(left: 10, right: 12),
+                        child: GestureDetector(
+                          onTap: () {},
+                          child: Image.asset(
+                            'assets/emoji.png',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      if (_hasTxt)
+                        AnimatedText(
+                          animation: _sendButtonAnimation,
+                          onTap: () {
+                            _sendTxt(_msgTextFieldController.text.trim());
+                            _msgTextFieldController.clear();
+                          },
+                        )
+                      else
+                        Container(
+                          width: 24,
+                          height: 24,
+                          margin: EdgeInsets.only(right: 9),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showMorePanel = true;
+                              });
+
+                              _msgTextFieldFocusNode.unfocus();
+                            },
+                            child: Image.asset(
+                              'assets/more_panel.png',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                _showMorePanel
+                    ? MorePanel(_selectPicture, _takePicture, null, null, null)
+                    : Container()
+              ],
             ),
-            _showMorePanel
-                ? MorePanel(_selectPicture, _takePicture, null, null, null)
-                : Container()
           ],
         ),
       ),
     );
+  }
+
+  Future _initRecordPath() async {
+    Directory baseDir = await getApplicationDocumentsDirectory();
+
+    baseVoiceDir = '${baseDir.path}/voice';
+    File tmp = File('$baseVoiceDir/tmp');
+    if (!tmp.existsSync()) {
+      tmp.createSync(recursive: true);
+    }
   }
 
   Future _getMsgList() async {
