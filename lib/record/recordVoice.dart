@@ -1,12 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_plugin_record/flutter_plugin_record.dart';
+import 'dart:io';
 
-typedef startRecord = Future Function();
-typedef stopRecord = Future Function();
+import 'package:flutter/material.dart';
+import 'package:lite_chat/record/flutterPluginRecord.dart';
+import 'package:path_provider/path_provider.dart';
+
+typedef StartRecord = Future Function();
+typedef StopRecord = Future Function(String path, int length);
 
 class RecordVoice extends StatefulWidget {
-  final Function startRecord;
-  final Function stopRecord;
+  final StartRecord startRecord;
+  final StopRecord stopRecord;
   final String recordPath;
 
   /// startRecord 开始录制回调  stopRecord回调
@@ -25,6 +28,7 @@ class _VoiceWidgetState extends State<RecordVoice> {
   String textShow = "按住说话";
   String toastShow = "手指上滑,取消发送";
   String voiceIco = "images/voice_volume_1.png";
+  int _recordTime;
 
   ///默认隐藏状态
   bool voiceState = true;
@@ -34,11 +38,10 @@ class _VoiceWidgetState extends State<RecordVoice> {
   @override
   void initState() {
     super.initState();
-    recordPlugin = new FlutterPluginRecord();
+    recordPlugin = FlutterPluginRecord();
 
-    _init();
+    _initRecordPath();
 
-    ///初始化方法的监听
     recordPlugin.responseFromInit.listen((data) {
       if (data) {
         print("初始化成功");
@@ -47,14 +50,18 @@ class _VoiceWidgetState extends State<RecordVoice> {
       }
     });
 
-    /// 开始录制或结束录制的监听
+    _init();
+
     recordPlugin.response.listen((data) {
-      if (data.msg == "onStop") {
+      if (data.msg == "onStop" && !isUp) {
         ///结束录制时会返回录制文件的地址方便上传服务器
         print("onStop  " + data.path);
-        widget.stopRecord(data.path, data.audioTimeLength);
+        _recordTime =
+            (DateTime.now().millisecondsSinceEpoch - _recordTime) ~/ 1000;
+        widget.stopRecord(data.path, _recordTime);
       } else if (data.msg == "onStart") {
         print("onStart --");
+        _recordTime = DateTime.now().millisecondsSinceEpoch;
         widget.startRecord();
       }
     });
@@ -84,8 +91,6 @@ class _VoiceWidgetState extends State<RecordVoice> {
           overlayEntry.markNeedsBuild();
         }
       });
-
-      print("振幅大小   " + voiceData.toString() + "  " + voiceIco);
     });
   }
 
@@ -147,8 +152,8 @@ class _VoiceWidgetState extends State<RecordVoice> {
       textShow = "松开结束";
       voiceState = false;
     });
-    buildOverLayView(context);
     start();
+    buildOverLayView(context);
   }
 
   hideVoiceView() {
@@ -184,41 +189,48 @@ class _VoiceWidgetState extends State<RecordVoice> {
     });
   }
 
+  Future _initRecordPath() async {
+    Directory baseDir = await getApplicationDocumentsDirectory();
+
+    Directory baseVoiceDir = Directory('${baseDir.path}/voice/');
+
+    if (!baseVoiceDir.existsSync()) {
+      baseVoiceDir.createSync(recursive: true);
+    }
+  }
+
   ///初始化语音录制的方法
-  void _init() async {
-    recordPlugin.init();
+  Future _init() async {
+    await recordPlugin.init();
   }
 
   ///开始语音录制的方法
-  void start() async {
-    recordPlugin.startByWavPath(widget.recordPath);
+  Future start() async {
+    await recordPlugin.startByWavPath(widget.recordPath);
   }
 
   ///停止语音录制的方法
-  void stop() {
-    recordPlugin.stop();
+  Future stop() async {
+    await recordPlugin.stop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: GestureDetector(
-//        onLongPress: (){
-//          print("onLongPress------onLongPress");
-//        },
+        onTap: () {},
         onLongPressStart: (details) {
-          starty = details.globalPosition.dy;
           print("start------onLongPressStart");
+          starty = details.globalPosition.dy;
           showVoiceView();
         },
         onLongPressEnd: (details) {
-          hideVoiceView();
           print("end------onLongPressEnd");
+          hideVoiceView();
         },
         onLongPressMoveUpdate: (details) {
           offset = details.globalPosition.dy;
           moveVoiceView();
-          print("update------onLongPressMoveUpdate");
         },
         child: Container(
           child: Center(

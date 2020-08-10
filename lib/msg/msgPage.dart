@@ -4,9 +4,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_plugin_record/flutter_plugin_record.dart';
-import 'package:flutter_plugin_record/play_state.dart';
-import 'package:flutter_plugin_record/voice_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/msg.dart';
@@ -14,7 +11,7 @@ import 'package:lite_chat/user/userInfo.dart';
 import 'package:lite_chat/widget/animatedText.dart';
 import 'package:lite_chat/widget/morePanel.dart';
 import 'package:lite_chat/widget/msgItem.dart';
-import 'package:lite_chat/widget/recordVoice.dart';
+import 'package:lite_chat/record/recordVoice.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../constant.dart';
@@ -63,8 +60,6 @@ class MsgPageState extends State<MsgPageRoute>
 
   bool _voice = false;
   AudioPlayer _audioPlayer = AudioPlayer();
-  String _recordPath;
-  int _recordTime;
 
   @override
   void initState() {
@@ -81,7 +76,6 @@ class MsgPageState extends State<MsgPageRoute>
 
     _receiveMsg = (e) {
       final msg = e as Map;
-      print('收到一条新消息：msg');
       _msgList.insert(0, msgFromMap(msg));
 
       setState(() {});
@@ -242,21 +236,13 @@ class MsgPageState extends State<MsgPageRoute>
                             borderRadius: BorderRadius.all(Radius.circular(5))),
                         child: _voice
                             ? RecordVoice(
-                                recordPath: '$baseVoiceDir/$_recordTime.wav',
-                                startRecord: () async {
-                                  _recordTime =
-                                      DateTime.now().millisecondsSinceEpoch;
-                                },
-                                stopRecord: (path, length) {
-                                  _recordPath = path;
-                                  _recordTime =
-                                      (DateTime.now().millisecondsSinceEpoch -
-                                              _recordTime) ~/
-                                          1000;
-
-                                  print(
-                                      '_recordPath:$_recordPath     _recordTime:$_recordTime');
-                                  _sendVoice(_recordPath, _recordTime);
+                                key: GlobalKey(),
+                                recordPath:
+                                    '$baseVoiceDir/${DateTime.now().millisecondsSinceEpoch}.wav',
+                                startRecord: () async {},
+                                stopRecord: (path, length) async {
+                                  print('_recordPath:$path     length:$length');
+                                  _sendVoice(path, length);
                                 },
                               )
                             : TextField(
@@ -338,10 +324,6 @@ class MsgPageState extends State<MsgPageRoute>
     Directory baseDir = await getApplicationDocumentsDirectory();
 
     baseVoiceDir = '${baseDir.path}/voice';
-    File tmp = File('$baseVoiceDir/tmp');
-    if (!tmp.existsSync()) {
-      tmp.createSync(recursive: true);
-    }
   }
 
   Future _getMsgList() async {
@@ -351,7 +333,6 @@ class MsgPageState extends State<MsgPageRoute>
 
       msgList.forEach((element) {
         Msg msg = msgFromMap(element);
-        print(msg);
         _msgList.insert(0, msg);
       });
 
