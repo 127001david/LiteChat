@@ -61,6 +61,8 @@ class MsgPageState extends State<MsgPageRoute>
   bool _voice = false;
   AudioPlayer _audioPlayer = AudioPlayer();
 
+  bool _dispose = false;
+
   @override
   void initState() {
     super.initState();
@@ -115,8 +117,10 @@ class MsgPageState extends State<MsgPageRoute>
 
   @override
   void dispose() {
-    bus.off(username);
-    _sendButtonAnimController.dispose();
+    _dispose = true;
+    bus.off(username, _receiveMsg);
+    _sendButtonAnimController?.dispose();
+    _audioPlayer?.release();
     super.dispose();
   }
 
@@ -170,23 +174,50 @@ class MsgPageState extends State<MsgPageRoute>
                           if (username == msg.from) {
                             return OtherVoice(msg.length, () {
                               print(msg.voiceUri);
-                              _audioPlayer.play(msg.voiceUri);
-                              if (msg.voiceUri.startsWith('http')) {
-                                _audioPlayer.play(msg.voiceUri, isLocal: false);
-                              } else {
-                                _audioPlayer.play(msg.voiceUri);
+                              if (AudioPlayerState.PLAYING ==
+                                  _audioPlayer.state) {
+                                _audioPlayer.stop();
                               }
+                              _audioPlayer.play(msg.voiceUri);
                             });
                           } else {
-                            return MyVoice(msg.length, () {
-                              print(msg.voiceUri);
-                              _audioPlayer.play(msg.voiceUri);
-                              if (msg.voiceUri.startsWith('http')) {
-                                _audioPlayer.play(msg.voiceUri, isLocal: false);
-                              } else {
+                            print('index = $index');
+                            SharePlayingWidget shareDataWidget =
+                                SharePlayingWidget(
+                              msg.playing,
+                              child: MyVoice(msg.length, () {
+                                print(msg.voiceUri);
+                                if (AudioPlayerState.PLAYING ==
+                                    _audioPlayer.state) {
+                                  _audioPlayer.stop();
+                                  setState(() {
+                                    msg.playing = false;
+                                  });
+
+                                  return;
+                                }
                                 _audioPlayer.play(msg.voiceUri);
-                              }
-                            });
+                                setState(() {
+                                  msg.playing = true;
+                                });
+
+                                _audioPlayer.onPlayerStateChanged
+                                    .listen((event) {
+                                  if (AudioPlayerState.COMPLETED ==
+                                          _audioPlayer.state ||
+                                      AudioPlayerState.STOPPED ==
+                                          _audioPlayer.state) {
+                                    if (!_dispose) {
+                                      setState(() {
+                                        msg.playing = false;
+                                      });
+                                    }
+                                  }
+                                });
+                              }),
+                            );
+
+                            return shareDataWidget;
                           }
                         }
 

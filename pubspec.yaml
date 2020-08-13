@@ -68,6 +68,10 @@ flutter:
     - assets/keyboard.png
     - assets/video_call.png
     - assets/voice_my.png
+    - assets/voice_my_1.png
+    - assets/voice_my_2.png
+    - assets/voice_my_3.png
+    - assets/voice_my_4.png
     - assets/voice_other.png
 
   # An image asset can refer to one or more resolution-specific "variants", see

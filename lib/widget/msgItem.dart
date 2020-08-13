@@ -1,8 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/widget/msgUserIcon.dart';
+
+import 'imagesAnim.dart';
 
 class OtherTxt extends StatelessWidget {
   OtherTxt(this.msgTxt);
@@ -61,6 +64,24 @@ class MyTxt extends StatelessWidget {
   }
 }
 
+class SharePlayingWidget extends InheritedWidget {
+  SharePlayingWidget(this.playing, {@required Widget child})
+      : super(child: child);
+
+  final bool playing;
+
+  static SharePlayingWidget of(BuildContext context) {
+    return context
+        .getElementForInheritedWidgetOfExactType<SharePlayingWidget>()
+        .widget;
+  }
+
+  @override
+  bool updateShouldNotify(SharePlayingWidget oldWidget) {
+    return oldWidget.playing != playing;
+  }
+}
+
 class OtherVoice extends StatelessWidget {
   OtherVoice(this.length, this.onTap);
 
@@ -103,11 +124,20 @@ class OtherVoice extends StatelessWidget {
   }
 }
 
-class MyVoice extends StatelessWidget {
+class MyVoice extends StatefulWidget {
   MyVoice(this.length, this.onTap);
 
   final int length;
   final GestureTapCallback onTap;
+
+  @override
+  State<StatefulWidget> createState() {
+    return MyVoiceState();
+  }
+}
+
+class MyVoiceState extends State<MyVoice> {
+  MyVoiceState();
 
   @override
   Widget build(BuildContext context) {
@@ -116,9 +146,11 @@ class MyVoice extends StatelessWidget {
       children: <Widget>[
         MyIcon(),
         GestureDetector(
-          onTap: onTap,
+          onTap: () {
+            widget.onTap();
+          },
           child: Container(
-            width: (40 + length * 20).toDouble(),
+            width: (40 + widget.length * 20).toDouble(),
             margin: EdgeInsets.only(right: 5),
             padding: EdgeInsets.only(left: 12, top: 12, right: 16, bottom: 6),
             constraints:
@@ -129,19 +161,49 @@ class MyVoice extends StatelessWidget {
                     image: AssetImage('assets/yellow_bubble.png'))),
             child: Text.rich(
                 TextSpan(children: [
-                  TextSpan(text: '$length″ ', style: TextStyle(fontSize: 14.0)),
+                  TextSpan(
+                      text: '${widget.length}″ ',
+                      style: TextStyle(fontSize: 14.0)),
                   WidgetSpan(
-                      child: Image.asset(
-                    'assets/voice_my.png',
-                    width: 10,
-                    height: 15,
-                  ))
+                      child: SharePlayingWidget.of(context).playing
+                          ? ImagesAnim([
+                              Image.asset(
+                                'assets/voice_my_3.png',
+                              ),
+                              Image.asset(
+                                'assets/voice_my_4.png',
+                              ),
+                              Image.asset(
+                                'assets/voice_my_1.png',
+                              ),
+                              Image.asset(
+                                'assets/voice_my_2.png',
+                              ),
+                              Image.asset(
+                                'assets/voice_my.png',
+                              ),
+                            ], 10, 15, Colors.transparent)
+                          : Image.asset(
+                              'assets/voice_my.png',
+                              width: 10,
+                              height: 15,
+                            ))
                 ]),
                 textAlign: TextAlign.right),
           ),
         ),
       ],
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
 

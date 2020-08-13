@@ -35,13 +35,13 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
       for (int i = 0; i < _conversations.length; i++) {
         if (_conversations[i]['username'] == msg['username']) {
           _conversations.removeAt(i);
+
+          _conversations.insert(0, msg);
+
+          setState(() {});
           break;
         }
       }
-
-      _conversations.insert(0, msg);
-
-      setState(() {});
     });
   }
 

@@ -128,6 +128,7 @@ class Msg implements BaseMsg {
   bool original;
   String imgUrl;
   String voiceUri;
+  bool playing = false;
   int length;
   String thumbUrl;
   int width;
