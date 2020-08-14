@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ImagesAnim extends StatefulWidget {
-  final List<Image> imageCaches;
+  final List<Widget> imageCaches;
   final double width;
   final double height;
   final Color backColor;

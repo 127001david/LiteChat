@@ -7,11 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/msg.dart';
+import 'package:lite_chat/record/recordVoice.dart';
 import 'package:lite_chat/user/userInfo.dart';
 import 'package:lite_chat/widget/animatedText.dart';
 import 'package:lite_chat/widget/morePanel.dart';
 import 'package:lite_chat/widget/msgItem.dart';
-import 'package:lite_chat/record/recordVoice.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../constant.dart';
@@ -172,48 +172,21 @@ class MsgPageState extends State<MsgPageRoute>
                           }
                         } else if (type_voice == msg.type) {
                           if (username == msg.from) {
-                            return OtherVoice(msg.length, () {
-                              print(msg.voiceUri);
-                              if (AudioPlayerState.PLAYING ==
-                                  _audioPlayer.state) {
-                                _audioPlayer.stop();
-                              }
-                              _audioPlayer.play(msg.voiceUri);
-                            });
+                            SharePlayingWidget shareDataWidget =
+                                SharePlayingWidget(
+                              msg.playing,
+                              child: OtherVoice(msg.length, () {
+                                _playVoice(msg);
+                              }),
+                            );
+
+                            return shareDataWidget;
                           } else {
-                            print('index = $index');
                             SharePlayingWidget shareDataWidget =
                                 SharePlayingWidget(
                               msg.playing,
                               child: MyVoice(msg.length, () {
-                                print(msg.voiceUri);
-                                if (AudioPlayerState.PLAYING ==
-                                    _audioPlayer.state) {
-                                  _audioPlayer.stop();
-                                  setState(() {
-                                    msg.playing = false;
-                                  });
-
-                                  return;
-                                }
-                                _audioPlayer.play(msg.voiceUri);
-                                setState(() {
-                                  msg.playing = true;
-                                });
-
-                                _audioPlayer.onPlayerStateChanged
-                                    .listen((event) {
-                                  if (AudioPlayerState.COMPLETED ==
-                                          _audioPlayer.state ||
-                                      AudioPlayerState.STOPPED ==
-                                          _audioPlayer.state) {
-                                    if (!_dispose) {
-                                      setState(() {
-                                        msg.playing = false;
-                                      });
-                                    }
-                                  }
-                                });
+                                _playVoice(msg);
                               }),
                             );
 
@@ -446,6 +419,33 @@ class MsgPageState extends State<MsgPageRoute>
     }
     setState(() {
       _showMorePanel = false;
+    });
+  }
+
+  void _playVoice(Msg msg) {
+    print(msg.voiceUri);
+    if (AudioPlayerState.PLAYING == _audioPlayer.state) {
+      _audioPlayer.stop();
+      setState(() {
+        msg.playing = false;
+      });
+
+      return;
+    }
+    _audioPlayer.play(msg.voiceUri);
+    setState(() {
+      msg.playing = true;
+    });
+
+    _audioPlayer.onPlayerStateChanged.listen((event) {
+      if (AudioPlayerState.COMPLETED == _audioPlayer.state ||
+          AudioPlayerState.STOPPED == _audioPlayer.state) {
+        if (!_dispose) {
+          setState(() {
+            msg.playing = false;
+          });
+        }
+      }
     });
   }
 }

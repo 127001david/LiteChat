@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/widget/msgUserIcon.dart';
+import 'dart:math' as math;
 
 import 'imagesAnim.dart';
 
@@ -108,11 +109,44 @@ class OtherVoice extends StatelessWidget {
             child: Text.rich(
               TextSpan(children: [
                 WidgetSpan(
-                    child: Image.asset(
-                  'assets/voice_other.png',
-                  width: 10,
-                  height: 15,
-                )),
+                    child: SharePlayingWidget.of(context).playing
+                        ? ImagesAnim([
+                            Transform.rotate(
+                              angle: math.pi,
+                              child: Image.asset(
+                                'assets/voice_my_3.png',
+                              ),
+                            ),
+                            Transform.rotate(
+                              angle: math.pi,
+                              child: Image.asset(
+                                'assets/voice_my_4.png',
+                              ),
+                            ),
+                            Transform.rotate(
+                              angle: math.pi,
+                              child: Image.asset(
+                                'assets/voice_my_1.png',
+                              ),
+                            ),
+                            Transform.rotate(
+                              angle: math.pi,
+                              child: Image.asset(
+                                'assets/voice_my_2.png',
+                              ),
+                            ),
+                            Transform.rotate(
+                              angle: math.pi,
+                              child: Image.asset(
+                                'assets/voice_my.png',
+                              ),
+                            ),
+                          ], 10, 15, Colors.transparent)
+                        : Image.asset(
+                            'assets/voice_other.png',
+                            width: 10,
+                            height: 15,
+                          )),
                 TextSpan(text: ' $length″')
               ]),
               style: TextStyle(fontSize: 14.0),
