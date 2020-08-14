@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:lite_chat/msg/event_bus.dart';
-import 'package:lite_chat/msg/model/conversation.dart';
+import 'package:lite_chat/msg/model/baseMsg.dart';
+import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/msg/msgPage.dart';
 import 'package:lite_chat/tab_item/baseTab.dart';
-import 'package:lite_chat/user/friendOptions.dart';
 
 import '../constant.dart';
 
@@ -20,7 +20,7 @@ class ChatTabWidget extends BaseTabWidget<ChatTabState> {
 class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
   static const channelCallNative =
       const MethodChannel(Constant.channel_conversation);
-  List<Map> _conversations = [];
+  List<Msg> _conversations = [];
 
   @override
   void initState() {
@@ -30,10 +30,10 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     _getConversations();
 
     bus.on(null, (e) {
-      final msg = e as Map;
+      final msg = e as Msg;
 
       for (int i = 0; i < _conversations.length; i++) {
-        if (_conversations[i]['username'] == msg['username']) {
+        if (_conversations[i].username == msg.username) {
           _conversations.removeAt(i);
 
           _conversations.insert(0, msg);
@@ -60,14 +60,34 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
         itemCount: _conversations.length,
         physics: BouncingScrollPhysics(),
         itemBuilder: (BuildContext context, int index) {
-          Map msg = _conversations[index];
+          Msg msg = _conversations[index];
+          String msgDsc;
+
+          switch (msg.type) {
+            case type_txt:
+              msgDsc = msg.txt;
+              break;
+            case type_img:
+              msgDsc = "一张图片";
+              break;
+            case type_voice:
+              msgDsc = "一段语音";
+              break;
+            case type_video:
+              msgDsc = "一段视频";
+              break;
+            case type_file:
+              msgDsc = "一个文件";
+              break;
+            default:
+              msgDsc = "：）";
+          }
 
           return InkWell(
             onTap: () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (BuildContext context) {
-                return MsgPageRoute(
-                    username: _conversations[index]['username']);
+                return MsgPageRoute(username: msg.username);
               }));
             },
             child: Row(
@@ -101,7 +121,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
                               child: Text(
                                   format.format(
                                       DateTime.fromMicrosecondsSinceEpoch(
-                                          _conversations[index]['time'])),
+                                          msg.time)),
                                   style: TextStyle(
                                       fontSize: 11,
                                       color:
@@ -110,20 +130,20 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
                             Expanded(
                                 flex: 1,
                                 child: Text(
-                                  _conversations[index]['username'],
+                                  msg.username,
                                   style: TextStyle(
                                       fontSize: 15,
                                       color: Color.fromARGB(255, 25, 25, 25)),
                                 )),
                           ],
                         ),
-                        if ('type_txt' == msg['type'])
-                          Text(_conversations[index]['txt'],
+                        if (type_txt == msg.type)
+                          Text(msgDsc,
                               style: TextStyle(
                                   fontSize: 11,
                                   color: Color.fromARGB(255, 178, 178, 178)))
                         else
-                          Text('[${msg['type']}]',
+                          Text('[$msgDsc]',
                               style: TextStyle(
                                   fontSize: 11,
                                   color: Color.fromARGB(255, 178, 178, 178)))
@@ -140,7 +160,6 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     );
   }
 
-  @override
   bool get wantKeepAlive => true;
 
   Future _getConversations() async {
@@ -149,12 +168,14 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
           await channelCallNative.invokeMethod('getConversations');
 
       conversations.forEach((element) {
-        _conversations.add(element);
+        _conversations.add(msgFromMap(element));
       });
 
       print(conversations);
 
       setState(() {});
-    } on PlatformException catch (e) {}
+    } on PlatformException catch (e) {
+      print(e);
+    }
   }
 }

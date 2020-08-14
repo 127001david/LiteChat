@@ -1,5 +1,5 @@
 //订阅者回调签名
-typedef void EventCallback(arg);
+typedef void EventCallback(dynamic arg);
 
 class EventBus {
   //私有构造函数
@@ -44,7 +44,7 @@ class EventBus {
   }
 
   //触发事件，事件触发后该事件所有订阅者会被调用
-  void emit(eventName, [arg]) {
+  void emit(eventName, arg) {
     _aelist.forEach((element) {
       element(arg);
     });

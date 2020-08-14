@@ -77,8 +77,8 @@ class MsgPageState extends State<MsgPageRoute>
     _initRecordPath();
 
     _receiveMsg = (e) {
-      final msg = e as Map;
-      _msgList.insert(0, msgFromMap(msg));
+      final msg = e as Msg;
+      _msgList.insert(0, msg);
 
       setState(() {});
     };
@@ -394,7 +394,7 @@ class MsgPageState extends State<MsgPageRoute>
     _msgList.insert(0, msg);
 
     bus.off(username, _receiveMsg);
-    bus.emit(username, msgToMap(msg));
+    bus.emit(username, msg);
     bus.on(username, _receiveMsg);
 
     setState(() {});

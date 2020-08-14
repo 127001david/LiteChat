@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMOptions;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import io.flutter.app.FlutterApplication;
 
@@ -19,6 +20,8 @@ public class MyApplication extends FlutterApplication {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate: ");
+
+        CrashReport.initCrashReport(getApplicationContext(), "b7dc554861", false);
 
         EMOptions options = new EMOptions();
         // 默认添加好友时，是不需要验证的，改成需要验证

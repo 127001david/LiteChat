@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lite_chat/friends/add.dart';
 import 'package:lite_chat/msg/event_bus.dart';
+import 'package:lite_chat/msg/model/msg.dart';
 
 import 'constant.dart';
 import 'tab_item/baseTab.dart';
@@ -39,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage>
 
     platformNativeCall.setMethodCallHandler((call) {
       final msg = call.arguments as Map;
-      bus.emit(msg['from'], msg);
+      bus.emit(msg['from'], msgFromMap(msg));
 
       return Future.value(666);
     });
