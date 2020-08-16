@@ -28,13 +28,6 @@ class LoginState extends State<LoginRoute> {
   @override
   void initState() {
     super.initState();
-//    _f1.addListener(() {
-//      (_formUsernameKey.currentState as FormState).validate();
-//    });
-//
-//    _f2.addListener(() {
-//      (_formPwdKey.currentState as FormState).validate();
-//    });
   }
 
   @override

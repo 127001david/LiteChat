@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lite_chat/msg/msgPage.dart';
 
+/// 好友操作页，展示好友简要信息、设置备注和标签、朋友圈权限、发消息、视频通话
 class FriendOptionsRoute extends StatefulWidget {
   FriendOptionsRoute({Key key, this.username}) : super(key: key);
 

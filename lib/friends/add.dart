@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../constant.dart';
 
+/// 添加好友
 class AddFriendRoute extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -12,8 +13,7 @@ class AddFriendRoute extends StatefulWidget {
 }
 
 class AddFriendState extends State<AddFriendRoute> {
-  static const channelCallNative =
-      const MethodChannel(Constant.channel_friend);
+  static const channelCallNative = const MethodChannel(Constant.channel_friend);
 
   bool _showSearchIcon = false;
   TextEditingController _controller = TextEditingController();

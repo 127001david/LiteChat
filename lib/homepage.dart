@@ -11,6 +11,7 @@ import 'tab_item/friendsTab.dart';
 import 'tab_item/myTab.dart';
 import 'tab_item/newWorldTab.dart';
 
+/// 首页，包括："轻聊"、"同学录"、"发现"、"我"四个 tab
 class MyHomePage extends StatefulWidget {
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -38,6 +39,7 @@ class _MyHomePageState extends State<MyHomePage>
     super.initState();
     _pageController = PageController();
 
+    // 消息由 homepage 页接收然后通过 EventBus 分发给监听者
     platformNativeCall.setMethodCallHandler((call) {
       final msg = call.arguments as Map;
       bus.emit(msg['from'], msgFromMap(msg));

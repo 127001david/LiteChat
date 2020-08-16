@@ -7,6 +7,7 @@ import 'package:lite_chat/user/login.dart';
 import 'package:lite_chat/user/register.dart';
 import 'package:lite_chat/user/userInfo.dart';
 
+/// 启动页
 class IndexPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -73,6 +74,7 @@ class IndexState extends State<IndexPage> {
     ));
   }
 
+  /// 检测是否需要登录，以本地 SharePreference 中的用户登录信息为准
   Future<void> checkLogin() async {
     try {
       loginUser = await channelCallNative.invokeMethod('checkLogin');

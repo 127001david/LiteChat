@@ -10,6 +10,7 @@ import 'package:lite_chat/tab_item/baseTab.dart';
 
 import '../constant.dart';
 
+/// 会话列表，首页"轻聊"tab，会话列表以每个会话的最新一条消息为 item
 class ChatTabWidget extends BaseTabWidget<ChatTabState> {
   @override
   State<StatefulWidget> createState() {
@@ -29,6 +30,8 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
 
     _getConversations();
 
+    //TODO EventBus 后续可能会被用作通用的数据监听，不止用于传递会话消息，所以需要为会话消息定义专门事件
+    // 监听所有消息，替换列表中的会话
     bus.on(null, (e) {
       final msg = e as Msg;
 

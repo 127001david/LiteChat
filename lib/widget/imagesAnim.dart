@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
+/// 帧动画，以 300毫秒（有必要的时候可传入参数 duration）为间隔轮播传入的 Widget 数组
 class ImagesAnim extends StatefulWidget {
   final List<Widget> imageCaches;
   final double width;
   final double height;
   final Color backColor;
+  final duration;
 
   ImagesAnim(this.imageCaches, this.width, this.height, this.backColor,
-      {Key key})
+      {Key key, this.duration})
       : assert(imageCaches != null),
         super(key: key);
 
@@ -19,12 +21,20 @@ class ImagesAnim extends StatefulWidget {
 
 class _WOActionImageState extends State<ImagesAnim> {
   bool _disposed = false;
-  Duration _duration = Duration(milliseconds: 300);
+  Duration _duration;
+
   int _imageIndex = 0;
 
   @override
   void initState() {
     super.initState();
+
+    if (null == widget.duration) {
+      _duration = Duration(milliseconds: 300);
+    } else {
+      _duration = widget.duration;
+    }
+
     _updateImage();
   }
 

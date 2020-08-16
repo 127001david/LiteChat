@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 import '../constant.dart';
 import 'model/baseMsg.dart';
 
+/// 聊天页
 class MsgPageRoute extends StatefulWidget {
   MsgPageRoute({Key key, this.username}) : super(key: key);
 

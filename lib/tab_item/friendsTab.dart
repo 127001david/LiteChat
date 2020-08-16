@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lite_chat/user/friendOptions.dart';
+import 'package:lite_chat/friends/friendOptions.dart';
 
 import '../constant.dart';
 import 'baseTab.dart';

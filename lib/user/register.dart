@@ -6,6 +6,7 @@ import 'package:lite_chat/user/userInfo.dart';
 
 import '../constant.dart';
 
+/// 新用户注册
 class RegisterRoute extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {

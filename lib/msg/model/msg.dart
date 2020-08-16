@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:lite_chat/msg/model/baseMsg.dart';
 
+/// 聊天消息实体类
 Msg msgFromMap(Map map) {
   Msg msg;
 
