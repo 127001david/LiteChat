@@ -82,7 +82,7 @@ class IndexState extends State<IndexPage> {
       print('login success');
     } on PlatformException catch (e) {}
 
-    if (null == loginUser) {
+    if (null == loginUser || '' == loginUser) {
       _needLogin = true;
       setState(() {});
     } else {

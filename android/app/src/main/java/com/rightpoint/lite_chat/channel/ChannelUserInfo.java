@@ -112,9 +112,6 @@ public class ChannelUserInfo {
                                         Activity.MODE_PRIVATE);
                                 SharedPreferences.Editor edit = sp.edit();
 
-                                String key = call.argument("key");
-                                String value = call.argument("value");
-
                                 edit.putString("username", username);
                                 edit.apply();
 
@@ -135,6 +132,20 @@ public class ChannelUserInfo {
                                     }
                                 });
                             }
+                        }
+                    });
+                } else if ("logout".equals(call.method)) {
+                    SharedPreferences sp = activity.getSharedPreferences("userInfo",
+                            Activity.MODE_PRIVATE);
+
+                    SharedPreferences.Editor edit = sp.edit();
+                    edit.putString("username", "");
+                    edit.apply();
+
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            result.success(true);
                         }
                     });
                 }

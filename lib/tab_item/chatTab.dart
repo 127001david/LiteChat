@@ -22,6 +22,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
   static const channelCallNative =
       const MethodChannel(Constant.channel_conversation);
   List<Msg> _conversations = [];
+  EventCallback _eventCallback;
 
   @override
   void initState() {
@@ -32,7 +33,8 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
 
     //TODO EventBus 后续可能会被用作通用的数据监听，不止用于传递会话消息，所以需要为会话消息定义专门事件
     // 监听所有消息，替换列表中的会话
-    bus.on(null, (e) {
+
+    _eventCallback = (e) {
       final msg = e as Msg;
 
       for (int i = 0; i < _conversations.length; i++) {
@@ -45,7 +47,15 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
           break;
         }
       }
-    });
+    };
+
+    bus.on(null, _eventCallback);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    bus.off(null, _eventCallback);
   }
 
   @override

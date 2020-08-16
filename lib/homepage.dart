@@ -51,48 +51,50 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
-        actions: <Widget>[
-          _showAction
-              ? PopupMenuButton<String>(
-                  icon: Icon(Icons.add),
-                  onSelected: (value) {
-                    switch (value) {
-                      case '发起群聊':
-                        break;
-                      case '添加朋友':
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    AddFriendRoute()));
-                        break;
-                      case '扫一扫　':
-                        break;
-                    }
-                  },
-                  itemBuilder: (BuildContext context) {
-                    return [
-                      PopupMenuItem(
-                        child: Text('发起群聊'),
-                      ),
-                      PopupMenuItem(
-                        value: '添加朋友',
-                        child: Text('添加朋友'),
-                      ),
-                      PopupMenuItem(
-                        child: Text('扫一扫　'),
+      appBar: '我' != _titles[_selectedIndex]
+          ? AppBar(
+              title: Text(_titles[_selectedIndex]),
+              actions: <Widget>[
+                _showAction
+                    ? PopupMenuButton<String>(
+                        icon: Icon(Icons.add),
+                        onSelected: (value) {
+                          switch (value) {
+                            case '发起群聊':
+                              break;
+                            case '添加朋友':
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          AddFriendRoute()));
+                              break;
+                            case '扫一扫　':
+                              break;
+                          }
+                        },
+                        itemBuilder: (BuildContext context) {
+                          return [
+                            PopupMenuItem(
+                              child: Text('发起群聊'),
+                            ),
+                            PopupMenuItem(
+                              value: '添加朋友',
+                              child: Text('添加朋友'),
+                            ),
+                            PopupMenuItem(
+                              child: Text('扫一扫　'),
+                            )
+                          ];
+                        },
                       )
-                    ];
-                  },
-                )
-              : Container(
-                  width: 0,
-                  height: 0,
-                ),
-        ],
-      ),
+                    : Container(
+                        width: 0,
+                        height: 0,
+                      ),
+              ],
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Color.fromARGB(255, 26, 183, 80),
