@@ -15,7 +15,7 @@ class NewWorldTabState extends BaseTabWidgetState<NewWorldTabWidget> {
   @override
   void initState() {
     super.initState();
-    title = '发现';
+    username = '发现';
   }
 
   @override

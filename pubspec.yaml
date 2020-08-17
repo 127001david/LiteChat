@@ -74,6 +74,7 @@ flutter:
     - assets/voice_my_4.png
     - assets/voice_other.png
     - assets/setting.png
+    - assets/qr_code_tiny.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

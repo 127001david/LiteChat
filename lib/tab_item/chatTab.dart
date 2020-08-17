@@ -27,7 +27,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
   @override
   void initState() {
     super.initState();
-    title = '轻聊';
+    username = '轻聊';
 
     _getConversations();
 

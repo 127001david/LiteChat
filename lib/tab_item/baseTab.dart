@@ -7,5 +7,5 @@ abstract class BaseTabWidget<T extends State> extends StatefulWidget {
 }
 
 abstract class BaseTabWidgetState<T extends BaseTabWidget> extends State<T> {
-  String title;
+  String username;
 }

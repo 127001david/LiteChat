@@ -23,7 +23,7 @@ class FriendsTabState extends BaseTabWidgetState<FriendsTabWidget>
   @override
   void initState() {
     super.initState();
-    title = '通讯录';
+    username = '通讯录';
 
     _friends.add('新的朋友');
     _friends.add('群聊');
