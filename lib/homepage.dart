@@ -21,6 +21,8 @@ class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   static const platformNativeCall =
       const MethodChannel(Constant.channel_receive_msg);
+  static const platformCallNative =
+      const MethodChannel(Constant.channel_call_native);
 
   List<BaseTabWidget> _tabViews = [
     ChatTabWidget(),
@@ -50,75 +52,83 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: '我' != _titles[_selectedIndex]
-          ? AppBar(
-              title: Text(_titles[_selectedIndex]),
-              actions: <Widget>[
-                _showAction
-                    ? PopupMenuButton<String>(
-                        icon: Icon(Icons.add),
-                        onSelected: (value) {
-                          switch (value) {
-                            case '发起群聊':
-                              break;
-                            case '添加朋友':
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          AddFriendRoute()));
-                              break;
-                            case '扫一扫　':
-                              break;
-                          }
-                        },
-                        itemBuilder: (BuildContext context) {
-                          return [
-                            PopupMenuItem(
-                              child: Text('发起群聊'),
-                            ),
-                            PopupMenuItem(
-                              value: '添加朋友',
-                              child: Text('添加朋友'),
-                            ),
-                            PopupMenuItem(
-                              child: Text('扫一扫　'),
-                            )
-                          ];
-                        },
-                      )
-                    : Container(
-                        width: 0,
-                        height: 0,
-                      ),
-              ],
-            )
-          : null,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        selectedItemColor: Color.fromARGB(255, 26, 183, 80),
-        backgroundColor: Color.fromARGB(255, 245, 245, 245),
-        unselectedItemColor: Color.fromARGB(255, 30, 30, 30),
-        onTap: _onItemTapped,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble), title: Text('轻聊')),
-          BottomNavigationBarItem(icon: Icon(Icons.people), title: Text('通讯录')),
-          BottomNavigationBarItem(icon: Icon(Icons.public), title: Text('发现')),
-          BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('我')),
-        ],
-      ),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        children: _tabViews,
-      ),
-    );
+    return WillPopScope(
+        child: Scaffold(
+          appBar: '我' != _titles[_selectedIndex]
+              ? AppBar(
+                  title: Text(_titles[_selectedIndex]),
+                  actions: <Widget>[
+                    _showAction
+                        ? PopupMenuButton<String>(
+                            icon: Icon(Icons.add),
+                            onSelected: (value) {
+                              switch (value) {
+                                case '发起群聊':
+                                  break;
+                                case '添加朋友':
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              AddFriendRoute()));
+                                  break;
+                                case '扫一扫　':
+                                  break;
+                              }
+                            },
+                            itemBuilder: (BuildContext context) {
+                              return [
+                                PopupMenuItem(
+                                  child: Text('发起群聊'),
+                                ),
+                                PopupMenuItem(
+                                  value: '添加朋友',
+                                  child: Text('添加朋友'),
+                                ),
+                                PopupMenuItem(
+                                  child: Text('扫一扫　'),
+                                )
+                              ];
+                            },
+                          )
+                        : Container(
+                            width: 0,
+                            height: 0,
+                          ),
+                  ],
+                )
+              : null,
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            selectedItemColor: Color.fromARGB(255, 26, 183, 80),
+            backgroundColor: Color.fromARGB(255, 245, 245, 245),
+            unselectedItemColor: Color.fromARGB(255, 30, 30, 30),
+            onTap: _onItemTapped,
+            items: <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.chat_bubble), title: Text('轻聊')),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.people), title: Text('通讯录')),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.public), title: Text('发现')),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person), title: Text('我')),
+            ],
+          ),
+          body: PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            children: _tabViews,
+          ),
+        ),
+        onWillPop: () async {
+          platformCallNative.invokeMethod('simulate_home');
+          return false;
+        });
   }
 
   void _onItemTapped(int index) {

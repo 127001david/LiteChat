@@ -2,6 +2,7 @@ package com.rightpoint.lite_chat;
 
 import androidx.annotation.NonNull;
 
+import com.rightpoint.lite_chat.channel.ChannelCallNative;
 import com.rightpoint.lite_chat.channel.ChannelConversation;
 import com.rightpoint.lite_chat.channel.ChannelFriend;
 import com.rightpoint.lite_chat.channel.ChannelMsg;
@@ -16,6 +17,7 @@ public class MainActivity extends FlutterActivity {
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
 
+        ChannelCallNative.connect(flutterEngine, this);
         ChannelUserInfo.connect(flutterEngine, this);
         ChannelFriend.connect(flutterEngine, this);
         ChannelMsg.connect(flutterEngine, this);
