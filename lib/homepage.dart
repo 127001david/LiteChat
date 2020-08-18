@@ -1,8 +1,7 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lite_chat/friends/add.dart';
-import 'package:lite_chat/msg/event_bus.dart';
-import 'package:lite_chat/msg/model/msg.dart';
 
 import 'constant.dart';
 import 'tab_item/baseTab.dart';
@@ -19,8 +18,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
-  static const platformNativeCall =
-      const MethodChannel(Constant.channel_receive_msg);
   static const platformCallNative =
       const MethodChannel(Constant.channel_call_native);
 
@@ -40,14 +37,6 @@ class _MyHomePageState extends State<MyHomePage>
   void initState() {
     super.initState();
     _pageController = PageController();
-
-    // 消息由 homepage 页接收然后通过 EventBus 分发给监听者
-    platformNativeCall.setMethodCallHandler((call) {
-      final msg = call.arguments as Map;
-      bus.emit(msg['from'], msgFromMap(msg));
-
-      return Future.value(666);
-    });
   }
 
   @override
@@ -106,7 +95,15 @@ class _MyHomePageState extends State<MyHomePage>
             onTap: _onItemTapped,
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                  icon: Icon(Icons.chat_bubble), title: Text('轻聊')),
+                  icon: Badge(
+                    badgeColor: Color.fromARGB(255, 250, 82, 81),
+                    shape: BadgeShape.circle,
+                    borderRadius: 100,
+                    padding: EdgeInsets.all(6),
+                    position: BadgePosition.topRight(top: -3, right: -3),
+                    child: Icon(Icons.chat_bubble),
+                  ),
+                  title: Text('轻聊')),
               BottomNavigationBarItem(
                   icon: Icon(Icons.people), title: Text('通讯录')),
               BottomNavigationBarItem(

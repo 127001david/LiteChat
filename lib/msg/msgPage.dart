@@ -84,7 +84,7 @@ class MsgPageState extends State<MsgPageRoute>
       setState(() {});
     };
 
-    bus.on(username, _receiveMsg);
+    bus.on('msg_from_$username', _receiveMsg);
 
     AnimationStatusListener listener = (status) {
       print(status);
@@ -119,7 +119,7 @@ class MsgPageState extends State<MsgPageRoute>
   @override
   void dispose() {
     _dispose = true;
-    bus.off(username, _receiveMsg);
+    bus.off('msg_from_$username', _receiveMsg);
     _sendButtonAnimController?.dispose();
     _audioPlayer?.release();
     super.dispose();
@@ -394,9 +394,7 @@ class MsgPageState extends State<MsgPageRoute>
   void addMsgToList(Msg msg) {
     _msgList.insert(0, msg);
 
-    bus.off(username, _receiveMsg);
-    bus.emit(username, msg);
-    bus.on(username, _receiveMsg);
+    bus.emit('conversations', msg);
 
     setState(() {});
   }

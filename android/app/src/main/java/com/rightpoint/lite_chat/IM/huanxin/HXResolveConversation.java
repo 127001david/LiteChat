@@ -42,6 +42,9 @@ public class HXResolveConversation implements IResolveConversation {
         conversation.loadMoreMsgFromDB(emMessage.getMsgId(), 19);
         List<EMMessage> messages = conversation.getAllMessages();
 
+        // 将会话下的所有消息标记为已读
+        conversation.markAllMessagesAsRead();
+
         List<Msg> msgs = new ArrayList<>();
         for (EMMessage message : messages) {
             msgs.add(ResolveMsg.resolveMsg(message));

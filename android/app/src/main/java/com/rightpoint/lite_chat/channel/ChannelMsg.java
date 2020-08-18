@@ -140,7 +140,7 @@ public class ChannelMsg {
 
             @Override
             public void receive(Msg msg) {
-                methodChannel.invokeMethod("receiveTxtMsg", msg);
+                methodChannel.invokeMethod("receiveMsg", msg);
             }
         });
 

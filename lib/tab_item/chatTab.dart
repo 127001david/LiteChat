@@ -19,6 +19,8 @@ class ChatTabWidget extends BaseTabWidget<ChatTabState> {
 }
 
 class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
+  static const platformNativeCall =
+      const MethodChannel(Constant.channel_receive_msg);
   static const channelCallNative =
       const MethodChannel(Constant.channel_conversation);
   List<Msg> _conversations = [];
@@ -31,9 +33,19 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
 
     _getConversations();
 
-    //TODO EventBus 后续可能会被用作通用的数据监听，不止用于传递会话消息，所以需要为会话消息定义专门事件
-    // 监听所有消息，替换列表中的会话
+    // 消息由 ChatTabState 页接收然后通过 EventBus 分发给监听者
+    platformNativeCall.setMethodCallHandler((call) {
+      if ('receiveMsg' == call.method) {
+        final msg = msgFromMap(call.arguments);
+        bus.emit('msg_from_${msg.from}', msg);
 
+        _eventCallback(msg);
+      }
+
+      return Future.value(666);
+    });
+
+    // 监听所有消息，替换列表中的会话
     _eventCallback = (e) {
       final msg = e as Msg;
 
@@ -49,7 +61,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
       }
     };
 
-    bus.on(null, _eventCallback);
+    bus.on('conversations', _eventCallback);
   }
 
   @override
