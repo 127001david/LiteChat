@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/baseMsg.dart';
+import 'package:lite_chat/msg/model/conversation.dart';
 import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/msg/msgPage.dart';
 import 'package:lite_chat/tab_item/baseTab.dart';
@@ -23,7 +24,12 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
       const MethodChannel(Constant.channel_receive_msg);
   static const channelCallNative =
       const MethodChannel(Constant.channel_conversation);
-  List<Msg> _conversations = [];
+
+  /// 用于页面展示
+  List<Conversation> _conversationList = [];
+
+  /// 用于更新会话内容
+  Map<String, Conversation> _conversationMap = {};
   EventCallback _eventCallback;
 
   @override
@@ -36,10 +42,12 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     // 消息由 ChatTabState 页接收然后通过 EventBus 分发给监听者
     platformNativeCall.setMethodCallHandler((call) {
       if ('receiveMsg' == call.method) {
-        final msg = msgFromMap(call.arguments);
+        var arguments = call.arguments;
+        final msg = msgFromMap(arguments);
         bus.emit('msg_from_${msg.from}', msg);
 
-        _eventCallback(msg);
+        _updateConversation(msg.username, msg);
+        setState(() {});
       }
 
       return Future.value(666);
@@ -49,25 +57,23 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     _eventCallback = (e) {
       final msg = e as Msg;
 
-      for (int i = 0; i < _conversations.length; i++) {
-        if (_conversations[i].username == msg.username) {
-          _conversations.removeAt(i);
-
-          _conversations.insert(0, msg);
-
-          setState(() {});
-          break;
-        }
-      }
+      _updateConversation(msg.username, msg, unreadMsg: 0);
+      setState(() {});
     };
 
     bus.on('conversations', _eventCallback);
   }
 
   @override
+  void deactivate() {
+    super.deactivate();
+    print('chatTab deactivated');
+  }
+
+  @override
   void dispose() {
     super.dispose();
-    bus.off(null, _eventCallback);
+    bus.off('conversations', _eventCallback);
   }
 
   @override
@@ -82,10 +88,11 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
 
     return Center(
       child: ListView.separated(
-        itemCount: _conversations.length,
+        itemCount: _conversationList.length,
         physics: BouncingScrollPhysics(),
         itemBuilder: (BuildContext context, int index) {
-          Msg msg = _conversations[index];
+          Conversation conversation = _conversationList[index];
+          Msg msg = conversation.msg;
           String msgDsc;
 
           switch (msg.type) {
@@ -110,6 +117,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
 
           return InkWell(
             onTap: () {
+              _clearConversationUnreadMsg(msg.username);
               Navigator.push(context,
                   MaterialPageRoute(builder: (BuildContext context) {
                 return MsgPageRoute(username: msg.username);
@@ -193,7 +201,12 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
           await channelCallNative.invokeMethod('getConversations');
 
       conversations.forEach((element) {
-        _conversations.add(msgFromMap(element));
+        int unreadMsg = element['unreadMsg'];
+        var msg = msgFromMap(element);
+        var conversation =
+            Conversation(msg.username, msg, unreadMsgCount: unreadMsg);
+        _conversationList.add(conversation);
+        _conversationMap[msg.username] = conversation;
       });
 
       print(conversations);
@@ -202,5 +215,34 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     } on PlatformException catch (e) {
       print(e);
     }
+  }
+
+  /// 根据[username]更新对应的会话数据，[unreadMsg]为null时表示接收到一条新消息，会话中的未读消息数自增 1
+  void _updateConversation(String username, Msg msg, {int unreadMsg}) {
+    var conversation = _conversationMap[username];
+    if (null == conversation) {
+      conversation = Conversation(username, msg, unreadMsgCount: 0);
+      _conversationMap[username] = conversation;
+      _conversationList.insert(0, conversation);
+    } else {
+      conversation.msg = msg;
+      if (null == unreadMsg) {
+        conversation.unreadMsgCount = conversation.unreadMsgCount + 1;
+      } else {
+        conversation.unreadMsgCount = unreadMsg;
+      }
+
+      _conversationList.remove(conversation);
+      _conversationList.insert(0, conversation);
+    }
+  }
+
+  /// 清除[username]对应的会话的未读消息数
+  void _clearConversationUnreadMsg(String username) {
+    var conversation = _conversationMap[username];
+    if (null != conversation) {
+      conversation.unreadMsgCount = 0;
+    }
+    setState(() {});
   }
 }

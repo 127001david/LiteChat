@@ -1,4 +1,9 @@
+import 'msg.dart';
+
 class Conversation {
+  Conversation(this.username, this.msg, {this.unreadMsgCount});
+
   String username;
-  String txt;
+  Msg msg;
+  int unreadMsgCount;
 }

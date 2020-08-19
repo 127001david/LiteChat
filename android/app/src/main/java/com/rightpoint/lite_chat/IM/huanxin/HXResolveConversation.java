@@ -27,6 +27,8 @@ public class HXResolveConversation implements IResolveConversation {
             @Override
             public void accept(String username, EMConversation emConversation) {
                 Msg msg = ResolveMsg.resolveMsg(username, emConversation.getLastMessage());
+                // 未读消息数
+                msg.put("unreadMsg", emConversation.getUnreadMsgCount());
                 list.add(msg);
             }
         });
