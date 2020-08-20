@@ -1,3 +1,4 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -47,6 +48,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
         bus.emit('msg_from_${msg.from}', msg);
 
         _updateConversation(msg.username, msg);
+        _updateTotalUnreadMsgCount();
         setState(() {});
       }
 
@@ -58,6 +60,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
       final msg = e as Msg;
 
       _updateConversation(msg.username, msg, unreadMsg: 0);
+
       setState(() {});
     };
 
@@ -93,7 +96,16 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
         itemBuilder: (BuildContext context, int index) {
           Conversation conversation = _conversationList[index];
           Msg msg = conversation.msg;
+          String unreadMsg;
           String msgDsc;
+
+          if (0 >= conversation.unreadMsgCount) {
+            unreadMsg = '';
+          } else if (10 > conversation.unreadMsgCount) {
+            unreadMsg = conversation.unreadMsgCount.toString();
+          } else {
+            unreadMsg = '...';
+          }
 
           switch (msg.type) {
             case type_txt:
@@ -118,6 +130,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
           return InkWell(
             onTap: () {
               _clearConversationUnreadMsg(msg.username);
+
               Navigator.push(context,
                   MaterialPageRoute(builder: (BuildContext context) {
                 return MsgPageRoute(username: msg.username);
@@ -125,17 +138,31 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
             },
             child: Row(
               children: <Widget>[
-                Container(
-                  width: 43,
-                  height: 43,
-                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(color: Colors.grey),
-                      child: Icon(
-                        Icons.perm_contact_calendar,
-                        color: Colors.white,
+                Badge(
+                  badgeColor: Color.fromARGB(255, 250, 82, 81),
+                  shape: BadgeShape.circle,
+                  showBadge: '' != unreadMsg,
+                  borderRadius: 100,
+                  padding: EdgeInsets.all(4),
+                  position: BadgePosition.topRight(top: 2, right: 8),
+                  animationType: BadgeAnimationType.fade,
+                  badgeContent: Text(unreadMsg,
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold)),
+                  child: Container(
+                    width: 43,
+                    height: 43,
+                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(color: Colors.grey),
+                        child: Icon(
+                          Icons.perm_contact_calendar,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -215,9 +242,11 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     } on PlatformException catch (e) {
       print(e);
     }
+
+    _updateTotalUnreadMsgCount();
   }
 
-  /// 根据[username]更新对应的会话数据，[unreadMsg]为null时表示接收到一条新消息，会话中的未读消息数自增 1
+  /// 根据[username]更新对应的会话数据，[unreadMsg]为 null 时表示接收到一条新消息，会话中的未读消息数自增 1
   void _updateConversation(String username, Msg msg, {int unreadMsg}) {
     var conversation = _conversationMap[username];
     if (null == conversation) {
@@ -243,6 +272,17 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     if (null != conversation) {
       conversation.unreadMsgCount = 0;
     }
+    _updateTotalUnreadMsgCount();
+
     setState(() {});
+  }
+
+  /// 更新总未读消息数
+  Future _updateTotalUnreadMsgCount() async {
+    var totalUnreadMsgCount = 0;
+    _conversationList.forEach((element) {
+      totalUnreadMsgCount += element.unreadMsgCount;
+    });
+    bus.emit('totalUnreadMsgCount', totalUnreadMsgCount);
   }
 }

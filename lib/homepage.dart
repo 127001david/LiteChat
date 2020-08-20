@@ -2,6 +2,7 @@ import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lite_chat/friends/add.dart';
+import 'package:lite_chat/msg/event_bus.dart';
 
 import 'constant.dart';
 import 'tab_item/baseTab.dart';
@@ -33,19 +34,37 @@ class _MyHomePageState extends State<MyHomePage>
 
   PageController _pageController;
 
+  int _totalUnreadMsgCount = 0;
+  EventCallback _resolveUnreadMsgCount;
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+
+    _resolveUnreadMsgCount = (unreadMsgCount) {
+      print('_resolveUnreadMsgCount : $unreadMsgCount');
+      _totalUnreadMsgCount = unreadMsgCount;
+      setState(() {});
+    };
+
+    bus.on('totalUnreadMsgCount', _resolveUnreadMsgCount);
   }
 
   @override
   Widget build(BuildContext context) {
+    String title = _titles[_selectedIndex];
+
+    if ('轻聊' == title) {
+      title =
+          0 == _totalUnreadMsgCount ? title : '$title($_totalUnreadMsgCount)';
+    }
+
     return WillPopScope(
         child: Scaffold(
-          appBar: '我' != _titles[_selectedIndex]
+          appBar: '我' != title
               ? AppBar(
-                  title: Text(_titles[_selectedIndex]),
+                  title: Text(title),
                   actions: <Widget>[
                     _showAction
                         ? PopupMenuButton<String>(
@@ -96,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage>
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                   icon: Badge(
+                    showBadge: 0 != _totalUnreadMsgCount,
                     badgeColor: Color.fromARGB(255, 250, 82, 81),
                     shape: BadgeShape.circle,
                     borderRadius: 100,
@@ -126,6 +146,12 @@ class _MyHomePageState extends State<MyHomePage>
           platformCallNative.invokeMethod('simulate_home');
           return false;
         });
+  }
+
+  @override
+  void dispose() {
+    bus.off('totalUnreadMsgCount', _resolveUnreadMsgCount);
+    super.dispose();
   }
 
   void _onItemTapped(int index) {
