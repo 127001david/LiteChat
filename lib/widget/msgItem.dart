@@ -250,10 +250,10 @@ class OtherImg extends StatelessWidget {
   Widget build(BuildContext context) {
     double width = 0;
     double height = 0;
-    if (msgImg.width > msgImg.height && msgImg.width > 150) {
+    if (msgImg.width >= msgImg.height && msgImg.width > 150) {
       width = 150;
       height = (msgImg.height.toDouble() / msgImg.width.toDouble()) * 150;
-    } else if (msgImg.height > msgImg.width && msgImg.height > 150) {
+    } else if (msgImg.height >= msgImg.width && msgImg.height > 150) {
       height = 150;
       width = (msgImg.width.toDouble() / msgImg.height.toDouble()) * 150;
     } else {
@@ -267,19 +267,20 @@ class OtherImg extends StatelessWidget {
         OtherIcon(),
         Container(
           margin: EdgeInsets.only(left: 5),
+          constraints: BoxConstraints(maxWidth: 150, minHeight: 150),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(5),
             child: msgImg.thumbUrl.startsWith("http")
                 ? FadeInImage.assetNetwork(
                     placeholder: 'assets/placeholder.png',
                     image: msgImg.thumbUrl,
-                    fit: BoxFit.fill,
+                    fit: BoxFit.cover,
                     width: width,
                     height: height,
                   )
                 : Image.file(
                     File(msgImg.thumbUrl),
-                    fit: BoxFit.fill,
+                    fit: BoxFit.cover,
                     width: width,
                     height: height,
                   ),
@@ -299,10 +300,10 @@ class MyImg extends StatelessWidget {
   Widget build(BuildContext context) {
     double width = 0;
     double height = 0;
-    if (msgImg.width > msgImg.height && msgImg.width > 150) {
+    if (msgImg.width >= msgImg.height && msgImg.width > 150) {
       width = 150;
       height = (msgImg.height.toDouble() / msgImg.width.toDouble()) * 150;
-    } else if (msgImg.height > msgImg.width && msgImg.height > 150) {
+    } else if (msgImg.height >= msgImg.width && msgImg.height > 150) {
       height = 150;
       width = (msgImg.width.toDouble() / msgImg.height.toDouble()) * 150;
     } else {
