@@ -36,3 +36,6 @@
 #Buggly
 -dontwarn com.tencent.bugly.**
 -keep public class com.tencent.bugly.**{*;}
+
+#腾讯云
+-keep class com.tencent.** { *; }
