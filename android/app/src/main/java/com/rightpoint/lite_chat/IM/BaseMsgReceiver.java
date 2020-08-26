@@ -32,5 +32,11 @@ public abstract class BaseMsgReceiver {
          * @param msg 消息体，是一个 HashMap<String, Object>
          */
         void receive(Msg msg);
+
+        /**
+         * 透传消息
+         * @param msg 消息体，是一个 HashMap<String, Object> 里面包含会话双方信息及一条指令和多条参数
+         */
+        void receiveCmd(Msg msg);
     }
 }

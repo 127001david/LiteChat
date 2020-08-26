@@ -2,7 +2,9 @@ package com.rightpoint.lite_chat.IM.huanxin;
 
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMTextMessageBody;
@@ -69,5 +71,27 @@ public class ResolveMsg {
         }
 
         return message;
+    }
+
+    public static Msg resolveCmdMsg(EMMessage cmdMsg) {
+        if (cmdMsg.getBody() instanceof EMCmdMessageBody) {
+            EMCmdMessageBody body = (EMCmdMessageBody) cmdMsg.getBody();
+
+            Msg message = new Msg()
+                    .setUsername(cmdMsg.getFrom())
+                    .setFrom(cmdMsg.getFrom())
+                    .setTo(cmdMsg.getTo())
+                    .setTime(cmdMsg.getMsgTime());
+
+            if (Msg.CMD_ACTION.equals(body.action())) {
+                message.setType(Msg.TYPE_VIDEO_CALL);
+                message.put("channel", body.getParams().get("channel"));
+                Log.d("cmdMsg", "resolveCmdMsg: " + body.getParams().get("channel"));
+
+                return message;
+            }
+        }
+
+        return null;
     }
 }

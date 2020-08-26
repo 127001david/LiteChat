@@ -23,13 +23,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  permission_handler: ^5.0.1+1
+  uuid: 2.2.0
   intl: ^0.16.1
   image_picker: ^0.6.7+4
   path_provider: ^1.5.1
   audioplayers: ^0.13.1
-  flutter_plugin_record: ^0.2.1
+  flutter_plugin_record: ^0.2.4
   badges: ^1.1.1
-  agora_rtc_engine: 1.0.5
+  agora_rtc_engine: 1.0.13
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

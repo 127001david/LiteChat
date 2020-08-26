@@ -48,27 +48,30 @@ public class HXReceiver extends BaseMsgReceiver {
 
             @Override
             public void onCmdMessageReceived(List<EMMessage> messages) {
-                //收到透传消息
+                // 收到透传消息
+                for (EMMessage message : messages) {
+                    listener.receiveCmd(ResolveMsg.resolveCmdMsg(message));
+                }
             }
 
             @Override
             public void onMessageRead(List<EMMessage> messages) {
-                //收到已读回执
+                // 收到已读回执
             }
 
             @Override
             public void onMessageDelivered(List<EMMessage> message) {
-                //收到已送达回执
+                // 收到已送达回执
             }
 
             @Override
             public void onMessageRecalled(List<EMMessage> messages) {
-                //消息被撤回
+                // 消息被撤回
             }
 
             @Override
             public void onMessageChanged(EMMessage message, Object change) {
-                //消息状态变动
+                // 消息状态变动
             }
         };
 

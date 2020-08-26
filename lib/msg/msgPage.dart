@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,12 +8,14 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/msg.dart';
+import 'package:lite_chat/msg/video_call/videoCall.dart';
 import 'package:lite_chat/record/recordVoice.dart';
 import 'package:lite_chat/user/userInfo.dart';
 import 'package:lite_chat/widget/animatedText.dart';
 import 'package:lite_chat/widget/morePanel.dart';
 import 'package:lite_chat/widget/msgItem.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../constant.dart';
 import 'model/baseMsg.dart';
@@ -315,7 +318,8 @@ class MsgPageState extends State<MsgPageRoute>
                   ),
                 ),
                 _showMorePanel
-                    ? MorePanel(_selectPicture, _takePicture, null, null, null)
+                    ? MorePanel(
+                        _selectPicture, _takePicture, _videoCall, null, null)
                     : Container()
               ],
             ),
@@ -419,6 +423,22 @@ class MsgPageState extends State<MsgPageRoute>
     setState(() {
       _showMorePanel = false;
     });
+  }
+
+  Future _videoCall() async {
+    var callChannel = Uuid().v1().toString();
+
+    print('call channel = $callChannel');
+
+    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
+      return VideoCallPage(
+          channelName: callChannel, role: ClientRole.Broadcaster);
+    }));
+
+    try {
+      await channelCallNative.invokeMethod(
+          'videoCall', {'channel': callChannel, 'username': username});
+    } on PlatformException catch (e) {}
   }
 
   void _playVoice(Msg msg) {

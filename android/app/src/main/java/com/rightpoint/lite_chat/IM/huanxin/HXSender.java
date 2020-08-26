@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMVoiceMessageBody;
@@ -118,6 +119,21 @@ public class HXSender implements IMsgSender {
         });
 
         EMClient.getInstance().chatManager().sendMessage(message);
+    }
+
+    @Override
+    public void videoCall(String to, boolean isGroup, String channel) {
+        EMMessage cmdMsg = EMMessage.createSendMessage(EMMessage.Type.CMD);
+
+        if (isGroup) {
+            cmdMsg.setChatType(EMMessage.ChatType.GroupChat);
+        }
+        EMCmdMessageBody cmdBody = new EMCmdMessageBody(Msg.CMD_ACTION);
+        cmdBody.getParams().put("channel", channel);
+        Log.d("cmdMsg", "videoCall: " + cmdBody.getParams().get("channel"));
+        cmdMsg.setTo(to);
+        cmdMsg.addBody(cmdBody);
+        EMClient.getInstance().chatManager().sendMessage(cmdMsg);
     }
 
     @Override

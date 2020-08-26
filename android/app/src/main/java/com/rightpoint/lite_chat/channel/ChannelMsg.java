@@ -105,26 +105,32 @@ public class ChannelMsg {
                     sender.sendVoice(username, !TextUtils.isEmpty(isGroup),
                             Integer.parseInt(length), Uri.parse(voicePath),
                             new IMsgSender.MessageStatusCallback() {
-                        @Override
-                        public void onSuccess(Msg msg) {
-                            activity.runOnUiThread(new Runnable() {
                                 @Override
-                                public void run() {
-                                    result.success(msg);
+                                public void onSuccess(Msg msg) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            result.success(msg);
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onError(int code, String error) {
+
+                                }
+
+                                @Override
+                                public void onProgress(int progress, String status) {
+
                                 }
                             });
-                        }
+                } else if ("videoCall".equals(call.method)) {
+                    String channel = call.argument("channel");
+                    String username = call.argument("username");
+                    String isGroup = call.argument("isGroup");
 
-                        @Override
-                        public void onError(int code, String error) {
-
-                        }
-
-                        @Override
-                        public void onProgress(int progress, String status) {
-
-                        }
-                    });
+                    sender.videoCall(username, !TextUtils.isEmpty(isGroup), channel);
                 }
             }
         });
@@ -140,7 +146,22 @@ public class ChannelMsg {
 
             @Override
             public void receive(Msg msg) {
-                methodChannel.invokeMethod("receiveMsg", msg);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        methodChannel.invokeMethod("receiveMsg", msg);
+                    }
+                });
+            }
+
+            @Override
+            public void receiveCmd(Msg msg) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        methodChannel.invokeMethod("receiveCmd", msg);
+                    }
+                });
             }
         });
 

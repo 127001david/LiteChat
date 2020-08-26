@@ -16,12 +16,15 @@ public class Msg extends HashMap<String, Object> {
     public static final String TYPE_IMG = "type_img";
     public static final String TYPE_VOICE = "type_voice";
     public static final String TYPE_VIDEO = "type_video";
+    public static final String TYPE_VIDEO_CALL = "type_video_call";
 
-    @StringDef({TYPE_TXT, TYPE_IMG, TYPE_VOICE, TYPE_VIDEO})
+    @StringDef({TYPE_TXT, TYPE_IMG, TYPE_VOICE, TYPE_VIDEO, TYPE_VIDEO_CALL})
     @Retention(RetentionPolicy.SOURCE)
     public @interface MsgType {
 
     }
+
+    public static final String CMD_ACTION = "videoCall";
 
     /**
      * 设置所属会话对方用户名

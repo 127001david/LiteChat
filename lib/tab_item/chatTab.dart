@@ -1,3 +1,4 @@
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:lite_chat/msg/model/baseMsg.dart';
 import 'package:lite_chat/msg/model/conversation.dart';
 import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/msg/msgPage.dart';
+import 'package:lite_chat/msg/video_call/videoCall.dart';
 import 'package:lite_chat/tab_item/baseTab.dart';
 
 import '../constant.dart';
@@ -43,13 +45,23 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     // 消息由 ChatTabState 页接收然后通过 EventBus 分发给监听者
     platformNativeCall.setMethodCallHandler((call) {
       if ('receiveMsg' == call.method) {
-        var arguments = call.arguments;
+        final arguments = call.arguments;
         final msg = msgFromMap(arguments);
         bus.emit('msg_from_${msg.from}', msg);
 
         _updateConversation(msg.username, msg);
         _updateTotalUnreadMsgCount();
         setState(() {});
+      } else if ('receiveCmd' == call.method) {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (BuildContext context) {
+          final arguments = call.arguments;
+          final channel = arguments['channel'];
+          return VideoCallPage(
+            channelName: channel,
+            role: ClientRole.Audience,
+          );
+        }));
       }
 
       return Future.value(666);

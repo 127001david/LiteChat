@@ -33,9 +33,18 @@ public interface IMsgSender {
      * @param isGroup 是否是群聊
      * @param length 语音时长 秒
      * @param voiceUri 语音文件Uri
+     * @param callback 发送状态回调
      */
     void sendVoice(String to, boolean isGroup, int length, Uri voiceUri,
                    MessageStatusCallback callback);
+
+    /**
+     * 语音通话
+     * @param to 接收者
+     * @param isGroup 是否是群聊
+     * @param channel 视频聊天室频道
+     */
+    void videoCall(String to, boolean isGroup, String channel);
 
     /**
      * 发送视频
