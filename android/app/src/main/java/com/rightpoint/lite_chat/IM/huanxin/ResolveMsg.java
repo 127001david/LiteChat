@@ -85,8 +85,14 @@ public class ResolveMsg {
 
             if (Msg.CMD_ACTION.equals(body.action())) {
                 message.setType(Msg.TYPE_VIDEO_CALL);
-                message.put("channel", body.getParams().get("channel"));
-                Log.d("cmdMsg", "resolveCmdMsg: " + body.getParams().get("channel"));
+                String channel = cmdMsg.getStringAttribute("channel", null);
+
+                if (null == channel) {
+                    return null;
+                }
+
+                message.put("channel", channel);
+                Log.d("cmdMsg", "resolveCmdMsg: " + channel);
 
                 return message;
             }

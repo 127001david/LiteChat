@@ -15,6 +15,7 @@ import 'package:lite_chat/widget/animatedText.dart';
 import 'package:lite_chat/widget/morePanel.dart';
 import 'package:lite_chat/widget/msgItem.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 
 import '../constant.dart';
@@ -428,17 +429,18 @@ class MsgPageState extends State<MsgPageRoute>
   Future _videoCall() async {
     var callChannel = Uuid().v1().toString();
 
-    print('call channel = $callChannel');
-
-    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
-      return VideoCallPage(
-          channelName: callChannel, role: ClientRole.Broadcaster);
-    }));
-
     try {
       await channelCallNative.invokeMethod(
           'videoCall', {'channel': callChannel, 'username': username});
     } on PlatformException catch (e) {}
+
+    await [Permission.camera, Permission.microphone, Permission.storage]
+        .request();
+
+    await Navigator.push(context,
+        MaterialPageRoute(builder: (BuildContext context) {
+      return CallPage(channelName: callChannel);
+    }));
   }
 
   void _playVoice(Msg msg) {

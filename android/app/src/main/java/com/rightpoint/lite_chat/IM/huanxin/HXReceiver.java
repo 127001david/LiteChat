@@ -6,6 +6,7 @@ import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessage;
 import com.rightpoint.lite_chat.IM.BaseMsgReceiver;
+import com.rightpoint.lite_chat.IM.Msg;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -40,7 +41,10 @@ public class HXReceiver extends BaseMsgReceiver {
                     @Override
                     public void run() {
                         for (EMMessage message : messages) {
-                            listener.receive(ResolveMsg.resolveMsg(message));
+                            Msg msg = ResolveMsg.resolveMsg(message);
+                            if (null != msg) {
+                                listener.receive(msg);
+                            }
                         }
                     }
                 });
@@ -50,7 +54,10 @@ public class HXReceiver extends BaseMsgReceiver {
             public void onCmdMessageReceived(List<EMMessage> messages) {
                 // 收到透传消息
                 for (EMMessage message : messages) {
-                    listener.receiveCmd(ResolveMsg.resolveCmdMsg(message));
+                    Msg msg = ResolveMsg.resolveCmdMsg(message);
+                    if (null != msg) {
+                        listener.receiveCmd(msg);
+                    }
                 }
             }
 

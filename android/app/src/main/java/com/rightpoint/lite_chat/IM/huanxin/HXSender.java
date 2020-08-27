@@ -129,8 +129,8 @@ public class HXSender implements IMsgSender {
             cmdMsg.setChatType(EMMessage.ChatType.GroupChat);
         }
         EMCmdMessageBody cmdBody = new EMCmdMessageBody(Msg.CMD_ACTION);
-        cmdBody.getParams().put("channel", channel);
-        Log.d("cmdMsg", "videoCall: " + cmdBody.getParams().get("channel"));
+        cmdMsg.setAttribute("channel",channel);
+        Log.d("cmdMsg", "videoCall: " + channel);
         cmdMsg.setTo(to);
         cmdMsg.addBody(cmdBody);
         EMClient.getInstance().chatManager().sendMessage(cmdMsg);

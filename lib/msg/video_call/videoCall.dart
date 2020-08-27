@@ -1,28 +1,30 @@
+import 'dart:async';
+
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:lite_chat/settings.dart';
 
-class VideoCallPage extends StatefulWidget {
+class CallPage extends StatefulWidget {
+  /// non-modifiable channel name of the page
   final String channelName;
-  final ClientRole role;
 
-  const VideoCallPage({Key key, this.channelName, this.role}) : super(key: key);
+  /// Creates a call page with given channel name.
+  const CallPage({Key key, this.channelName}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return VideoCallState();
-  }
+  _CallPageState createState() => _CallPageState();
 }
 
-class VideoCallState extends State<VideoCallPage> {
+class _CallPageState extends State<CallPage> {
   static final _users = <int>[];
   final _infoStrings = <String>[];
   bool muted = false;
 
   @override
   void dispose() {
+    // clear users
     _users.clear();
+    // destroy sdk
     AgoraRtcEngine.leaveChannel();
     AgoraRtcEngine.destroy();
     super.dispose();
@@ -31,40 +33,36 @@ class VideoCallState extends State<VideoCallPage> {
   @override
   void initState() {
     super.initState();
-    _initPlatformState();
+    // initialize agora sdk
+    initialize();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Agora Flutter QuickStart'),
-      ),
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Stack(
-          children: <Widget>[
-            _viewRows(),
-            _panel(),
-            _toolbar(),
-          ],
-        ),
-      ),
-    );
-  }
+  Future<void> initialize() async {
+    if (APP_ID.isEmpty) {
+      setState(() {
+        _infoStrings.add(
+          'APP_ID missing, please provide your APP_ID in settings.dart',
+        );
+        _infoStrings.add('Agora Engine is not starting');
+      });
+      return;
+    }
 
-  Future _initPlatformState() async {
-    // 声网 APP_ID
-    await AgoraRtcEngine.create("6dbdbd4d39034c1c9c34b55571008e0e");
-    await AgoraRtcEngine.enableAudio();
-    await AgoraRtcEngine.setChannelProfile(ChannelProfile.LiveBroadcasting);
-    await AgoraRtcEngine.setClientRole(widget.role);
+    await _initAgoraRtcEngine();
     _addAgoraEventHandlers();
     await AgoraRtcEngine.enableWebSdkInteroperability(true);
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
     configuration.dimensions = Size(1920, 1080);
     await AgoraRtcEngine.setVideoEncoderConfiguration(configuration);
     await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 0);
+  }
+
+  /// Create agora sdk instance and initialize
+  Future<void> _initAgoraRtcEngine() async {
+    await AgoraRtcEngine.create(APP_ID);
+    await AgoraRtcEngine.enableVideo();
+    await AgoraRtcEngine.setChannelProfile(ChannelProfile.Communication);
+//    await AgoraRtcEngine.setClientRole(widget.role);
   }
 
   /// Add agora event handlers
@@ -126,9 +124,7 @@ class VideoCallState extends State<VideoCallPage> {
   /// Helper function to get list of native views
   List<Widget> _getRenderViews() {
     final List<AgoraRenderWidget> list = [];
-    if (widget.role == ClientRole.Broadcaster) {
-      list.add(AgoraRenderWidget(0, local: true, preview: true));
-    }
+    list.add(AgoraRenderWidget(0, local: true, preview: true));
     _users.forEach((int uid) => list.add(AgoraRenderWidget(uid)));
     return list;
   }
@@ -188,7 +184,6 @@ class VideoCallState extends State<VideoCallPage> {
 
   /// Toolbar layout
   Widget _toolbar() {
-    if (widget.role == ClientRole.Audience) return Container();
     return Container(
       alignment: Alignment.bottomCenter,
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -299,5 +294,24 @@ class VideoCallState extends State<VideoCallPage> {
 
   void _onSwitchCamera() {
     AgoraRtcEngine.switchCamera();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Agora Flutter QuickStart'),
+      ),
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Stack(
+          children: <Widget>[
+            _viewRows(),
+            _panel(),
+            _toolbar(),
+          ],
+        ),
+      ),
+    );
   }
 }

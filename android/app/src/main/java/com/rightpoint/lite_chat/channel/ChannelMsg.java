@@ -131,6 +131,13 @@ public class ChannelMsg {
                     String isGroup = call.argument("isGroup");
 
                     sender.videoCall(username, !TextUtils.isEmpty(isGroup), channel);
+
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            result.success(true);
+                        }
+                    });
                 }
             }
         });

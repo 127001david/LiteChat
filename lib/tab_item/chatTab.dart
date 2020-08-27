@@ -11,6 +11,7 @@ import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/msg/msgPage.dart';
 import 'package:lite_chat/msg/video_call/videoCall.dart';
 import 'package:lite_chat/tab_item/baseTab.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../constant.dart';
 
@@ -43,7 +44,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
     _getConversations();
 
     // 消息由 ChatTabState 页接收然后通过 EventBus 分发给监听者
-    platformNativeCall.setMethodCallHandler((call) {
+    platformNativeCall.setMethodCallHandler((call) async {
       if ('receiveMsg' == call.method) {
         final arguments = call.arguments;
         final msg = msgFromMap(arguments);
@@ -53,13 +54,16 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
         _updateTotalUnreadMsgCount();
         setState(() {});
       } else if ('receiveCmd' == call.method) {
-        Navigator.push(context,
+        await [Permission.camera, Permission.microphone, Permission.storage]
+            .request();
+
+        await Navigator.push(context,
             MaterialPageRoute(builder: (BuildContext context) {
           final arguments = call.arguments;
           final channel = arguments['channel'];
-          return VideoCallPage(
+          print('channel : $channel');
+          return CallPage(
             channelName: channel,
-            role: ClientRole.Audience,
           );
         }));
       }
