@@ -48,11 +48,12 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
       if ('receiveMsg' == call.method) {
         final arguments = call.arguments;
         final msg = msgFromMap(arguments);
-        bus.emit('msg_from_${msg.from}', msg);
 
         _updateConversation(msg.username, msg);
         _updateTotalUnreadMsgCount();
         setState(() {});
+
+        bus.emit('msg_from_${msg.from}', msg);
       } else if ('receiveCmd' == call.method) {
         await [Permission.camera, Permission.microphone, Permission.storage]
             .request();
@@ -71,13 +72,12 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
       return Future.value(666);
     });
 
-    // 监听所有消息，替换列表中的会话
     _eventCallback = (e) {
       final msg = e as Msg;
 
+      // todo 替换为只标记 msg 为已读
       _updateConversation(msg.username, msg, unreadMsg: 0);
-
-      setState(() {});
+      _clearConversationUnreadMsg(msg.username);
     };
 
     bus.on('conversations', _eventCallback);
@@ -264,6 +264,8 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
 
   /// 根据[username]更新对应的会话数据，[unreadMsg]为 null 时表示接收到一条新消息，会话中的未读消息数自增 1
   void _updateConversation(String username, Msg msg, {int unreadMsg}) {
+    print('$username msg $unreadMsg');
+
     var conversation = _conversationMap[username];
     if (null == conversation) {
       conversation = Conversation(username, msg, unreadMsgCount: 0);
@@ -283,7 +285,14 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
   }
 
   /// 清除[username]对应的会话的未读消息数
-  void _clearConversationUnreadMsg(String username) {
+  void _clearConversationUnreadMsg(String username) async {
+    try {
+      await channelCallNative
+          .invokeMethod('markAllMessagesAsRead', {'username': username});
+    } on PlatformException catch (e) {
+      print(e);
+    }
+
     var conversation = _conversationMap[username];
     if (null != conversation) {
       conversation.unreadMsgCount = 0;

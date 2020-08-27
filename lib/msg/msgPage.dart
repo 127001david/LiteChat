@@ -83,9 +83,7 @@ class MsgPageState extends State<MsgPageRoute>
 
     _receiveMsg = (e) {
       final msg = e as Msg;
-      _msgList.insert(0, msg);
-
-      setState(() {});
+      _addMsgToList(msg);
     };
 
     bus.on('msg_from_$username', _receiveMsg);
@@ -363,7 +361,7 @@ class MsgPageState extends State<MsgPageRoute>
           time: new DateTime.now().millisecondsSinceEpoch,
           txt: txt);
 
-      addMsgToList(msg);
+      _addMsgToList(msg);
 
       print('文字已发送:$txt');
     } on PlatformException catch (e) {}
@@ -377,7 +375,7 @@ class MsgPageState extends State<MsgPageRoute>
       Msg msg = msgFromMap(map);
       print('图片已发送：$msg');
 
-      addMsgToList(msg);
+      _addMsgToList(msg);
     } on PlatformException catch (e) {}
   }
 
@@ -392,11 +390,11 @@ class MsgPageState extends State<MsgPageRoute>
       Msg msg = msgFromMap(map);
       print('语音已发送：$msg');
 
-      addMsgToList(msg);
+      _addMsgToList(msg);
     } on PlatformException catch (e) {}
   }
 
-  void addMsgToList(Msg msg) {
+  void _addMsgToList(Msg msg) {
     _msgList.insert(0, msg);
 
     bus.emit('conversations', msg);
