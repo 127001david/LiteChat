@@ -4,26 +4,26 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:lite_chat/settings.dart';
 
-class CallPage extends StatefulWidget {
+class VideoCallSinglePage extends StatefulWidget {
   /// non-modifiable channel name of the page
   final String channelName;
 
   /// Creates a call page with given channel name.
-  const CallPage({Key key, this.channelName}) : super(key: key);
+  const VideoCallSinglePage({Key key, this.channelName}) : super(key: key);
 
   @override
-  _CallPageState createState() => _CallPageState();
+  _VideoCallSingleState createState() => _VideoCallSingleState();
 }
 
-class _CallPageState extends State<CallPage> {
-  static final _users = <int>[];
+class _VideoCallSingleState extends State<VideoCallSinglePage> {
+  int _user = -1;
   final _infoStrings = <String>[];
   bool muted = false;
 
   @override
   void dispose() {
     // clear users
-    _users.clear();
+    _user = -1;
     // destroy sdk
     AgoraRtcEngine.leaveChannel();
     AgoraRtcEngine.destroy();
@@ -62,7 +62,6 @@ class _CallPageState extends State<CallPage> {
     await AgoraRtcEngine.create(APP_ID);
     await AgoraRtcEngine.enableVideo();
     await AgoraRtcEngine.setChannelProfile(ChannelProfile.Communication);
-//    await AgoraRtcEngine.setClientRole(widget.role);
   }
 
   /// Add agora event handlers
@@ -88,7 +87,7 @@ class _CallPageState extends State<CallPage> {
     AgoraRtcEngine.onLeaveChannel = () {
       setState(() {
         _infoStrings.add('onLeaveChannel');
-        _users.clear();
+        _user = -1;
       });
     };
 
@@ -96,7 +95,7 @@ class _CallPageState extends State<CallPage> {
       setState(() {
         final info = 'userJoined: $uid';
         _infoStrings.add(info);
-        _users.add(uid);
+        _user = uid;
       });
     };
 
@@ -104,7 +103,7 @@ class _CallPageState extends State<CallPage> {
       setState(() {
         final info = 'userOffline: $uid';
         _infoStrings.add(info);
-        _users.remove(uid);
+        _user = -1;
       });
     };
 
@@ -121,65 +120,25 @@ class _CallPageState extends State<CallPage> {
     };
   }
 
-  /// Helper function to get list of native views
-  List<Widget> _getRenderViews() {
-    final List<AgoraRenderWidget> list = [];
-    list.add(AgoraRenderWidget(0, local: true, preview: true));
-    _users.forEach((int uid) => list.add(AgoraRenderWidget(uid)));
-    return list;
-  }
-
-  /// Video view wrapper
-  Widget _videoView(view) {
-    return Expanded(child: Container(child: view));
-  }
-
-  /// Video view row wrapper
-  Widget _expandedVideoRow(List<Widget> views) {
-    final wrappedViews = views.map<Widget>(_videoView).toList();
-    return Expanded(
-      child: Row(
-        children: wrappedViews,
-      ),
-    );
-  }
-
   /// Video layout wrapper
   Widget _viewRows() {
-    final views = _getRenderViews();
-    switch (views.length) {
-      case 1:
-        return Container(
-            child: Column(
-          children: <Widget>[_videoView(views[0])],
-        ));
-      case 2:
-        return Container(
-            child: Column(
-          children: <Widget>[
-            _expandedVideoRow([views[0]]),
-            _expandedVideoRow([views[1]])
-          ],
-        ));
-      case 3:
-        return Container(
-            child: Column(
-          children: <Widget>[
-            _expandedVideoRow(views.sublist(0, 2)),
-            _expandedVideoRow(views.sublist(2, 3))
-          ],
-        ));
-      case 4:
-        return Container(
-            child: Column(
-          children: <Widget>[
-            _expandedVideoRow(views.sublist(0, 2)),
-            _expandedVideoRow(views.sublist(2, 4))
-          ],
-        ));
-      default:
-    }
-    return Container();
+    final remoteView = -1 != _user ? AgoraRenderWidget(_user) : null;
+
+    final localView = AgoraRenderWidget(0, local: true, preview: true);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        -1 != _user ? remoteView : localView,
+        Positioned(
+          top: 20.0,
+          right: 18.0,
+          width: 90,
+          height: 180,
+          child: -1 != _user ? localView : Container(),
+        )
+      ],
+    );
   }
 
   /// Toolbar layout
@@ -299,9 +258,6 @@ class _CallPageState extends State<CallPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Agora Flutter QuickStart'),
-      ),
       backgroundColor: Colors.black,
       body: Center(
         child: Stack(

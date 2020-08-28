@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lite_chat/msg/event_bus.dart';
 import 'package:lite_chat/msg/model/msg.dart';
-import 'package:lite_chat/msg/video_call/videoCall.dart';
+import 'package:lite_chat/msg/video_call/videoCallSingle.dart';
 import 'package:lite_chat/record/recordVoice.dart';
 import 'package:lite_chat/user/userInfo.dart';
 import 'package:lite_chat/widget/animatedText.dart';
@@ -437,7 +436,7 @@ class MsgPageState extends State<MsgPageRoute>
 
     await Navigator.push(context,
         MaterialPageRoute(builder: (BuildContext context) {
-      return CallPage(channelName: callChannel);
+      return VideoCallSinglePage(channelName: callChannel);
     }));
   }
 

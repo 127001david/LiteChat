@@ -1,4 +1,3 @@
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,7 @@ import 'package:lite_chat/msg/model/baseMsg.dart';
 import 'package:lite_chat/msg/model/conversation.dart';
 import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/msg/msgPage.dart';
-import 'package:lite_chat/msg/video_call/videoCall.dart';
+import 'package:lite_chat/msg/video_call/videoCallSingle.dart';
 import 'package:lite_chat/tab_item/baseTab.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -63,7 +62,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
           final arguments = call.arguments;
           final channel = arguments['channel'];
           print('channel : $channel');
-          return CallPage(
+          return VideoCallSinglePage(
             channelName: channel,
           );
         }));
