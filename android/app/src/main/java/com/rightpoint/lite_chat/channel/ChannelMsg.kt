@@ -98,6 +98,31 @@ object ChannelMsg {
                     }
                     activity.runOnUiThread { result.success(true) }
                 }
+                "videoCallEnd" -> {
+                    // TODO: 2020/8/28 插入一条视频通话时长消息
+                    val channel = call.argument<String>("channel")
+                    val username = call.argument<String>("username")
+                    val isGroup = call.argument<String>("isGroup")
+                    activity.runOnUiThread { result.success(true) }
+                }
+                "videoCallCancel" -> {
+                    val channel = call.argument<String>("channel")
+                    val username = call.argument<String>("username")
+                    val isGroup = call.argument<String>("isGroup")
+                    if (username != null && channel != null) {
+                        sender.videoCallCancel(username, !TextUtils.isEmpty(isGroup), channel)
+                    }
+                    activity.runOnUiThread { result.success(true) }
+                }
+                "videoCallRefuse" -> {
+                    val channel = call.argument<String>("channel")
+                    val username = call.argument<String>("username")
+                    val isGroup = call.argument<String>("isGroup")
+                    if (username != null && channel != null) {
+                        sender.videoCallRefuse(username, !TextUtils.isEmpty(isGroup), channel)
+                    }
+                    activity.runOnUiThread { result.success(true) }
+                }
             }
         })
     }

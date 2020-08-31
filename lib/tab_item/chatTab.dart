@@ -48,24 +48,35 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
         final arguments = call.arguments;
         final msg = msgFromMap(arguments);
 
-        _updateConversation(msg.username, msg);
-        _updateTotalUnreadMsgCount();
-        setState(() {});
+        if ('type_video_call_cancel' == msg.type) {
+          bus.emit('cmd_from_${msg.from}', msg);
+        } else if ('type_video_call_refuse' == msg.type) {
+          bus.emit('cmd_from_${msg.from}', msg);
+        } else {
+          _updateConversation(msg.username, msg);
+          _updateTotalUnreadMsgCount();
+          setState(() {});
 
-        bus.emit('msg_from_${msg.from}', msg);
+          bus.emit('msg_from_${msg.from}', msg);
+        }
       } else if ('receiveCmd' == call.method) {
-        await [Permission.camera, Permission.microphone, Permission.storage]
-            .request();
+        final msg = msgFromMap(call.arguments);
+        if ('type_video_call' == msg.type) {
+          await [Permission.camera, Permission.microphone, Permission.storage]
+              .request();
 
-        await Navigator.push(context,
-            MaterialPageRoute(builder: (BuildContext context) {
-          final arguments = call.arguments;
-          final channel = arguments['channel'];
-          print('channel : $channel');
-          return VideoCallSinglePage(
-            channelName: channel,
-          );
-        }));
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (BuildContext context) {
+            final arguments = call.arguments;
+            final channel = arguments['channel'];
+            print('channel : $channel');
+            return VideoCallSinglePage(
+              channelName: channel,
+              username: arguments['username'],
+              isCaller: false,
+            );
+          }));
+        }
       }
 
       return Future.value(666);

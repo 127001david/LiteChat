@@ -2,26 +2,45 @@ import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lite_chat/constant.dart';
+import 'package:lite_chat/msg/event_bus.dart';
+import 'package:lite_chat/msg/model/msg.dart';
 import 'package:lite_chat/settings.dart';
 
 class VideoCallSinglePage extends StatefulWidget {
   /// non-modifiable channel name of the page
   final String channelName;
 
+  final String username;
+
+  /// 当前用户是通话发起者
+  final bool isCaller;
+
   /// Creates a call page with given channel name.
-  const VideoCallSinglePage({Key key, this.channelName}) : super(key: key);
+  const VideoCallSinglePage(
+      {Key key, this.channelName, this.username, this.isCaller})
+      : super(key: key);
 
   @override
   _VideoCallSingleState createState() => _VideoCallSingleState();
 }
 
 class _VideoCallSingleState extends State<VideoCallSinglePage> {
+  static const channelCallNative =
+      const MethodChannel(Constant.channel_send_msg);
+
   int _user = -1;
   final _infoStrings = <String>[];
   bool muted = false;
 
+  bool _calling = true;
+
+  EventCallback _receiveMsg;
+
   @override
   void dispose() {
+    bus.off('cmd_from_${widget.username}', _receiveMsg);
     // clear users
     _user = -1;
     // destroy sdk
@@ -33,8 +52,41 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
   @override
   void initState() {
     super.initState();
+
+    _receiveMsg = (e) {
+      final msg = e as Msg;
+      print('type_video_call_cancel = ${msg.type}');
+      if ('type_video_call_cancel' == msg.type) {
+        Navigator.pop(context);
+      } else if ('type_video_call_refuse' == msg.type) {
+        Navigator.pop(context);
+      }
+    };
+
+    bus.on('cmd_from_${widget.username}', _receiveMsg);
+
     // initialize agora sdk
     initialize();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Stack(
+          children: <Widget>[
+            _viewRows(),
+            Offstage(
+              offstage: !_calling || widget.isCaller,
+              child: Container(color: Colors.black54),
+            ),
+            _calling ? _userInfo() : Container(),
+            (widget.isCaller || !_calling) ? _toolbar() : _toolbarCalling(),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> initialize() async {
@@ -48,20 +100,18 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
       return;
     }
 
-    await _initAgoraRtcEngine();
+    await AgoraRtcEngine.create(APP_ID);
+    await AgoraRtcEngine.enableVideo();
+    await AgoraRtcEngine.setChannelProfile(ChannelProfile.Communication);
     _addAgoraEventHandlers();
     await AgoraRtcEngine.enableWebSdkInteroperability(true);
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
     configuration.dimensions = Size(1920, 1080);
     await AgoraRtcEngine.setVideoEncoderConfiguration(configuration);
-    await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 0);
   }
 
-  /// Create agora sdk instance and initialize
-  Future<void> _initAgoraRtcEngine() async {
-    await AgoraRtcEngine.create(APP_ID);
-    await AgoraRtcEngine.enableVideo();
-    await AgoraRtcEngine.setChannelProfile(ChannelProfile.Communication);
+  Future _joinChannel() async {
+    await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 0);
   }
 
   /// Add agora event handlers
@@ -105,6 +155,8 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
         _infoStrings.add(info);
         _user = -1;
       });
+
+      _onCallEnd(context);
     };
 
     AgoraRtcEngine.onFirstRemoteVideoFrame = (
@@ -163,14 +215,14 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
           ),
           RawMaterialButton(
             onPressed: () => _onCallEnd(context),
-            child: Icon(
-              Icons.call_end,
-              color: Colors.white,
-              size: 35.0,
+            child: Image.asset(
+              'assets/call_end.png',
+              width: 35,
+              height: 35,
             ),
             shape: CircleBorder(),
             elevation: 2.0,
-            fillColor: Colors.redAccent,
+            fillColor: Color.fromARGB(255, 218, 74, 74),
             padding: const EdgeInsets.all(15.0),
           ),
           RawMaterialButton(
@@ -184,6 +236,94 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
             elevation: 2.0,
             fillColor: Colors.white,
             padding: const EdgeInsets.all(12.0),
+          )
+        ],
+      ),
+    );
+  }
+
+  /// Toolbar layout in calling state
+  Widget _toolbarCalling() {
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        Positioned(
+            left: 39,
+            bottom: 41,
+            child: RawMaterialButton(
+              onPressed: () => _onCallCancel(context),
+              child: Image.asset(
+                'assets/call_end.png',
+                width: 35,
+                height: 35,
+              ),
+              shape: CircleBorder(),
+              elevation: 2.0,
+              fillColor: Color.fromARGB(255, 218, 74, 74),
+              padding: const EdgeInsets.all(15.0),
+            )),
+        Positioned(
+            right: 39,
+            bottom: 41,
+            child: RawMaterialButton(
+              onPressed: () {
+                _joinChannel();
+                setState(() {
+                  _calling = false;
+                });
+              },
+              child: Image.asset(
+                'assets/accept_call.png',
+                width: 35,
+                height: 35,
+              ),
+              shape: CircleBorder(),
+              elevation: 2.0,
+              fillColor: Color.fromARGB(255, 13, 178, 8),
+              padding: const EdgeInsets.all(15.0),
+            )),
+      ],
+    );
+  }
+
+  Widget _userInfo() {
+    return Container(
+      alignment: Alignment.topRight,
+      padding: EdgeInsets.only(top: 44, right: 16),
+      child: Row(
+        textDirection: TextDirection.rtl,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 39,
+            height: 39,
+            margin: EdgeInsets.only(left: 14),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: Colors.orangeAccent),
+                child: Icon(
+                  Icons.perm_contact_calendar,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                widget.username,
+                style: TextStyle(color: Colors.white, fontSize: 27),
+              ),
+              Container(
+                child: Text(
+                  widget.isCaller ? '正在等待对方接受邀请' : '邀请你进行视频通话',
+                  style: TextStyle(color: Colors.white, fontSize: 15),
+                ),
+              )
+            ],
           )
         ],
       ),
@@ -240,7 +380,22 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
     );
   }
 
-  void _onCallEnd(BuildContext context) {
+  void _onCallEnd(BuildContext context) async {
+    try {
+      await channelCallNative.invokeMethod(
+          widget.isCaller && _calling ? 'videoCallCancel' : 'videoCallEnd',
+          {'channel': widget.channelName, 'username': widget.username});
+    } on PlatformException catch (e) {}
+
+    Navigator.pop(context);
+  }
+
+  void _onCallCancel(BuildContext context) async {
+    try {
+      await channelCallNative.invokeMethod('videoCallRefuse',
+          {'channel': widget.channelName, 'username': widget.username});
+    } on PlatformException catch (e) {}
+
     Navigator.pop(context);
   }
 
@@ -253,21 +408,5 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
 
   void _onSwitchCamera() {
     AgoraRtcEngine.switchCamera();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Stack(
-          children: <Widget>[
-            _viewRows(),
-            _panel(),
-            _toolbar(),
-          ],
-        ),
-      ),
-    );
   }
 }

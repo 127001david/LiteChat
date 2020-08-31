@@ -40,6 +40,33 @@ Msg msgFromMap(Map map) {
           voiceUri: map['voiceUri'],
           length: map['length']);
       break;
+    case 'type_video_call':
+      msg = Msg(
+          type: map['type'],
+          username: map['username'],
+          from: map['from'],
+          to: map['to'],
+          time: map['time'],
+          channel: map['channel']);
+      break;
+    case 'type_video_call_cancel':
+      msg = Msg(
+          type: map['type'],
+          username: map['username'],
+          from: map['from'],
+          to: map['to'],
+          time: map['time'],
+          channel: map['channel']);
+      break;
+    case 'type_video_call_refuse':
+      msg = Msg(
+          type: map['type'],
+          username: map['username'],
+          from: map['from'],
+          to: map['to'],
+          time: map['time'],
+          channel: map['channel']);
+      break;
     default:
       msg = Msg(from: map['from'], to: map['to'], time: map['time']);
   }
@@ -99,6 +126,10 @@ Map msgToMap(Msg data) {
     msg['fileUri'] = data.fileUri;
   }
 
+  if (null != data.channel) {
+    msg['channel'] = data.channel;
+  }
+
   return msg;
 }
 
@@ -118,7 +149,8 @@ class Msg implements BaseMsg {
       this.width,
       this.height,
       this.videoUri,
-      this.fileUri});
+      this.fileUri,
+      this.channel});
 
   String type;
   String username;
@@ -136,9 +168,10 @@ class Msg implements BaseMsg {
   int height;
   String videoUri;
   String fileUri;
+  String channel;
 
   @override
   String toString() {
-    return 'msg type:$type, from:$from, to:$to, time:$time, txt:$txt, imgUrl:$imgUrl, thumbUrl:$thumbUrl, width:$width, height:$height, voiceUri:$voiceUri, length:$length, videoUri:$videoUri, fileUri:$fileUri';
+    return 'msg type:$type, from:$from, to:$to, time:$time, txt:$txt, imgUrl:$imgUrl, thumbUrl:$thumbUrl, width:$width, height:$height, voiceUri:$voiceUri, length:$length, videoUri:$videoUri, fileUri:$fileUri, channel:$channel';
   }
 }

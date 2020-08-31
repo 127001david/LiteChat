@@ -10,7 +10,7 @@ import com.rightpoint.lite_chat.IM.Msg
  * @author Wonder Wei
  * Create date：2020/7/19 10:49 AM
  */
-object ResolveMsg {
+object ResolveHXMsg {
     fun resolveMsg(msg: EMMessage): Msg {
         return resolveMsg(null, msg)
     }
@@ -34,7 +34,7 @@ object ResolveMsg {
                 val thumbnailUrl = msgBody.thumbnailUrl
                 val imgLocalUri = msgBody.localUri
                 val thumbnailLocalUri = msgBody.thumbnailLocalUri()
-                message.setType(Msg.Companion.TYPE_IMG)
+                message.setType(Msg.TYPE_IMG)
                         .setImgUrl(if (null == imgLocalUri) imgRemoteUrl else imgLocalUri.path)
                         .setThumbUrl(if (null == thumbnailLocalUri) thumbnailUrl else thumbnailLocalUri.path)
                         .setWidth(msgBody.width)
@@ -44,8 +44,27 @@ object ResolveMsg {
                 val voiceBody = msg.body as EMVoiceMessageBody
                 val voiceRemoteUrl = voiceBody.remoteUrl
                 val voiceLocalUri = voiceBody.localUri
-                message.setType(Msg.Companion.TYPE_VOICE)
+                message.setType(Msg.TYPE_VOICE)
                         .setVoiceUri(if (null == voiceLocalUri) voiceRemoteUrl else voiceLocalUri.path).setLength(voiceBody.length)
+            }
+            EMMessage.Type.CUSTOM -> {
+                val body = msg.body as EMCustomMessageBody
+                when (body.event()) {
+                    Msg.TYPE_VIDEO_CALL_CANCEL -> {
+                        message.setType(Msg.TYPE_VIDEO_CALL_CANCEL)
+                        val channel = body.params["channel"]
+                        message["channel"] = channel
+                        Log.d("cmdMsg", "resolveCmdMsg: $channel")
+                        return message
+                    }
+                    Msg.TYPE_VIDEO_CALL_REFUSE -> {
+                        message.setType(Msg.TYPE_VIDEO_CALL_REFUSE)
+                        val channel = body.params["channel"]
+                        message["channel"] = channel
+                        Log.d("cmdMsg", "resolveCmdMsg: $channel")
+                        return message
+                    }
+                }
             }
             else -> {
             }
@@ -61,12 +80,14 @@ object ResolveMsg {
                     .setFrom(cmdMsg.from)
                     .setTo(cmdMsg.to)
                     .setTime(cmdMsg.msgTime)
-            if (Msg.Companion.CMD_ACTION == body.action()) {
-                message.setType(Msg.Companion.TYPE_VIDEO_CALL)
-                val channel = cmdMsg.getStringAttribute("channel", null) ?: return null
-                message["channel"] = channel
-                Log.d("cmdMsg", "resolveCmdMsg: $channel")
-                return message
+            when {
+                Msg.CMD_ACTION_VIDEO_CALL == body.action() -> {
+                    message.setType(Msg.TYPE_VIDEO_CALL)
+                    val channel = cmdMsg.getStringAttribute("channel", null) ?: return null
+                    message["channel"] = channel
+                    Log.d("cmdMsg", "resolveCmdMsg: $channel")
+                    return message
+                }
             }
         }
         return null

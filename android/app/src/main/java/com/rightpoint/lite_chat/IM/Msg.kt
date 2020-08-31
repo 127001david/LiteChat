@@ -15,7 +15,9 @@ class Msg : HashMap<String?, Any?>() {
         const val TYPE_VOICE = "type_voice"
         const val TYPE_VIDEO = "type_video"
         const val TYPE_VIDEO_CALL = "type_video_call"
-        const val CMD_ACTION = "videoCall"
+        const val TYPE_VIDEO_CALL_CANCEL = "type_video_call_cancel"
+        const val TYPE_VIDEO_CALL_REFUSE = "type_video_call_refuse"
+        const val CMD_ACTION_VIDEO_CALL = "videoCall"
     }
     
     @StringDef(TYPE_TXT, TYPE_IMG, TYPE_VOICE, TYPE_VIDEO, TYPE_VIDEO_CALL)

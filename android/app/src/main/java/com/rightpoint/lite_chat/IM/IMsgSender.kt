@@ -39,12 +39,28 @@ interface IMsgSender {
                   callback: MessageStatusCallback)
 
     /**
-     * 语音通话
+     * 视频通话
      * @param to 接收者
      * @param isGroup 是否是群聊
      * @param channel 视频聊天室频道
      */
     fun videoCall(to: String, isGroup: Boolean, channel: String)
+
+    /**
+     * 取消视频通话
+     * @param to 接收者
+     * @param isGroup 是否是群聊
+     * @param channel 视频聊天室频道
+     */
+    fun videoCallCancel(to: String, isGroup: Boolean, channel: String)
+
+    /**
+     * 拒绝视频通话
+     * @param to 接收者
+     * @param isGroup 是否是群聊
+     * @param channel 视频聊天室频道
+     */
+    fun videoCallRefuse(to: String, isGroup: Boolean, channel: String)
 
     /**
      * 发送视频

@@ -87,6 +87,8 @@ class MsgPageState extends State<MsgPageRoute>
 
     bus.on('msg_from_$username', _receiveMsg);
 
+    bus.on('cmd_from_$username', _receiveMsg);
+
     AnimationStatusListener listener = (status) {
       print(status);
       if (status == AnimationStatus.dismissed) {
@@ -436,7 +438,11 @@ class MsgPageState extends State<MsgPageRoute>
 
     await Navigator.push(context,
         MaterialPageRoute(builder: (BuildContext context) {
-      return VideoCallSinglePage(channelName: callChannel);
+      return VideoCallSinglePage(
+        channelName: callChannel,
+        username: username,
+        isCaller: true,
+      );
     }));
   }
 

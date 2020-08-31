@@ -17,7 +17,7 @@ class HXResolveConversation : IResolveConversation {
             val list: MutableList<Msg> = ArrayList()
             val conversations = EMClient.getInstance().chatManager().allConversations
             conversations.forEach { (username, emConversation) ->
-                val msg = ResolveMsg.resolveMsg(username, emConversation.lastMessage)
+                val msg = ResolveHXMsg.resolveMsg(username, emConversation.lastMessage)
                 // 未读消息数
                 msg!!["unreadMsg"] = emConversation.unreadMsgCount
                 list.add(msg)
@@ -35,7 +35,7 @@ class HXResolveConversation : IResolveConversation {
         conversation.markAllMessagesAsRead()
         val msgs: MutableList<Msg> = ArrayList()
         for (message in messages) {
-            msgs.add(ResolveMsg.resolveMsg(message))
+            msgs.add(ResolveHXMsg.resolveMsg(message))
         }
         return msgs
     }

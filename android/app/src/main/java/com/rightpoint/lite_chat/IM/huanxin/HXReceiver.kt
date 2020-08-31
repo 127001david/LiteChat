@@ -26,8 +26,8 @@ class HXReceiver : BaseMsgReceiver() {
                 val activity = activityReference.get()
                 activity!!.runOnUiThread {
                     for (message in messages) {
-                        val msg = ResolveMsg.resolveMsg(message)
-                        listener!!.receive(msg)
+                        val msg = ResolveHXMsg.resolveMsg(message)
+                        listener?.receive(msg)
                     }
                 }
             }
@@ -35,9 +35,9 @@ class HXReceiver : BaseMsgReceiver() {
             override fun onCmdMessageReceived(messages: List<EMMessage>) {
                 // 收到透传消息
                 for (message in messages) {
-                    val msg = ResolveMsg.resolveCmdMsg(message)
+                    val msg = ResolveHXMsg.resolveCmdMsg(message)
                     if (null != msg) {
-                        listener!!.receiveCmd(msg)
+                        listener?.receiveCmd(msg)
                     }
                 }
             }

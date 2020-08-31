@@ -4,9 +4,11 @@ import android.net.Uri
 import android.util.Log
 import com.hyphenate.EMCallBack
 import com.hyphenate.chat.*
+import com.hyphenate.chat.EMMessage
 import com.rightpoint.lite_chat.IM.IMsgSender
 import com.rightpoint.lite_chat.IM.IMsgSender.MessageStatusCallback
 import com.rightpoint.lite_chat.IM.Msg
+
 
 /**
  * Description：
@@ -15,7 +17,7 @@ import com.rightpoint.lite_chat.IM.Msg
  */
 class HXSender : IMsgSender {
     private val TAG = "HXSender"
-    
+
     override fun sendTxt(to: String, isGroup: Boolean, txt: String) {
         val message = EMMessage.createTxtSendMessage(txt, to)
         if (isGroup) {
@@ -101,12 +103,40 @@ class HXSender : IMsgSender {
         if (isGroup) {
             cmdMsg.chatType = EMMessage.ChatType.GroupChat
         }
-        val cmdBody = EMCmdMessageBody(Msg.CMD_ACTION)
+        val cmdBody = EMCmdMessageBody(Msg.CMD_ACTION_VIDEO_CALL)
         cmdMsg.setAttribute("channel", channel)
         Log.d("cmdMsg", "videoCall: $channel")
         cmdMsg.to = to
         cmdMsg.addBody(cmdBody)
         EMClient.getInstance().chatManager().sendMessage(cmdMsg)
+    }
+
+    override fun videoCallCancel(to: String, isGroup: Boolean, channel: String) {
+        val customMessage = EMMessage.createSendMessage(EMMessage.Type.CUSTOM)
+        val customBody = EMCustomMessageBody(Msg.TYPE_VIDEO_CALL_CANCEL)
+        val params = mutableMapOf<String, String>()
+        params["channel"] = channel
+        customBody.params = params
+        customMessage.addBody(customBody)
+        customMessage.to = to
+        if (isGroup) {
+            customMessage.chatType = EMMessage.ChatType.GroupChat
+        }
+        EMClient.getInstance().chatManager().sendMessage(customMessage)
+    }
+
+    override fun videoCallRefuse(to: String, isGroup: Boolean, channel: String) {
+        val customMessage = EMMessage.createSendMessage(EMMessage.Type.CUSTOM)
+        val customBody = EMCustomMessageBody(Msg.TYPE_VIDEO_CALL_REFUSE)
+        val params = mutableMapOf<String, String>()
+        params["channel"] = channel
+        customBody.params = params
+        customMessage.addBody(customBody)
+        customMessage.to = to
+        if (isGroup) {
+            customMessage.chatType = EMMessage.ChatType.GroupChat
+        }
+        EMClient.getInstance().chatManager().sendMessage(customMessage)
     }
 
     override fun sendVideo(to: String, isGroup: Boolean, length: Int, thumbUri: Uri, videoUri: Uri) {}
