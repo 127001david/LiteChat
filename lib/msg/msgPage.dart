@@ -403,10 +403,10 @@ class MsgPageState extends State<MsgPageRoute>
     setState(() {});
   }
 
+  /// 拍照后发送
   Future _takePicture() async {
     var image = await ImagePicker().getImage(source: ImageSource.camera);
     if (null != image) {
-      print('图片路径${image.path}');
       _sendImg(image.path);
     }
     setState(() {
@@ -414,6 +414,7 @@ class MsgPageState extends State<MsgPageRoute>
     });
   }
 
+  /// 相册中选择后发送
   Future _selectPicture() async {
     var image = await ImagePicker().getImage(source: ImageSource.gallery);
     if (null != image) {
@@ -425,6 +426,7 @@ class MsgPageState extends State<MsgPageRoute>
     });
   }
 
+  /// 发起视频通话
   Future _videoCall() async {
     var callChannel = Uuid().v1().toString();
 
@@ -446,6 +448,7 @@ class MsgPageState extends State<MsgPageRoute>
     }));
   }
 
+  /// 播放语音
   void _playVoice(Msg msg) {
     print(msg.voiceUri);
     if (AudioPlayerState.PLAYING == _audioPlayer.state) {
