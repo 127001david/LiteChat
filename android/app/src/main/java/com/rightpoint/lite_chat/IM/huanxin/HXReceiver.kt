@@ -24,7 +24,7 @@ class HXReceiver : BaseMsgReceiver() {
                     return
                 }
                 val activity = activityReference.get()
-                activity!!.runOnUiThread {
+                activity?.runOnUiThread {
                     for (message in messages) {
                         val msg = ResolveHXMsg.resolveMsg(message)
                         listener?.receive(msg)

@@ -67,6 +67,7 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
 
     // initialize agora sdk
     initialize();
+    _addAgoraEventHandlers();
   }
 
   @override
@@ -83,6 +84,7 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
             ),
             _calling ? _userInfo() : Container(),
             (widget.isCaller || !_calling) ? _toolbar() : _toolbarCalling(),
+            // _panel()
           ],
         ),
       ),
@@ -103,14 +105,14 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
     await AgoraRtcEngine.create(APP_ID);
     await AgoraRtcEngine.enableVideo();
     await AgoraRtcEngine.setChannelProfile(ChannelProfile.Communication);
-    _addAgoraEventHandlers();
     await AgoraRtcEngine.enableWebSdkInteroperability(true);
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
-    configuration.dimensions = Size(1920, 1080);
+    configuration.orientationMode = VideoOutputOrientationMode.FixedPortrait;
     await AgoraRtcEngine.setVideoEncoderConfiguration(configuration);
   }
 
   Future _joinChannel() async {
+    await AgoraRtcEngine.startPreview();
     await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 0);
   }
 
@@ -131,6 +133,7 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
       setState(() {
         final info = 'onJoinChannel: $channel, uid: $uid';
         _infoStrings.add(info);
+        _user = uid;
       });
     };
 
@@ -175,6 +178,8 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
   /// Video layout wrapper
   Widget _viewRows() {
     final remoteView = -1 != _user ? AgoraRenderWidget(_user) : null;
+
+    print('_user = $_user');
 
     final localView = AgoraRenderWidget(0, local: true, preview: true);
 

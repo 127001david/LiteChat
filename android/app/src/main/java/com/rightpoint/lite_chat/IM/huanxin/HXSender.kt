@@ -76,7 +76,7 @@ class HXSender : IMsgSender {
                 val voiceBody = message.body as EMVoiceMessageBody
                 val voiceRemoteUrl = voiceBody.remoteUrl
                 val voiceLocalUri = voiceBody.localUri
-                callback?.onSuccess(Msg()
+                callback.onSuccess(Msg()
                         .setType(Msg.TYPE_VOICE)
                         .setUsername(to)
                         .setTo(to)

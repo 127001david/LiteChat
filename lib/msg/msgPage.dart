@@ -199,7 +199,7 @@ class MsgPageState extends State<MsgPageRoute>
                         }
 
                         return ListTile(
-                          title: Text(msg.type),
+                          // title: Text(msg.type),
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) {
