@@ -151,8 +151,16 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
             case type_file:
               msgDsc = "一个文件";
               break;
+            case type_video_call_cancel:{
+              msgDsc = "通话已取消";
+              break;
+            }
+            case type_video_call_cancel:{
+              msgDsc = "通话已拒绝";
+              break;
+            }
             default:
-              msgDsc = "：）";
+              msgDsc = msg.type;
           }
 
           return InkWell(
