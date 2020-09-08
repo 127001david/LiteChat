@@ -67,7 +67,6 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
 
     // initialize agora sdk
     initialize();
-    _addAgoraEventHandlers();
   }
 
   @override
@@ -103,17 +102,16 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
     }
 
     await AgoraRtcEngine.create(APP_ID);
+    _addAgoraEventHandlers();
     await AgoraRtcEngine.enableVideo();
     await AgoraRtcEngine.setChannelProfile(ChannelProfile.Communication);
     await AgoraRtcEngine.enableWebSdkInteroperability(true);
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
     configuration.orientationMode = VideoOutputOrientationMode.FixedPortrait;
     await AgoraRtcEngine.setVideoEncoderConfiguration(configuration);
-  }
-
-  Future _joinChannel() async {
-    await AgoraRtcEngine.startPreview();
-    await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 0);
+    if(widget.isCaller) {
+      await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 0);
+    }
   }
 
   /// Add agora event handlers
@@ -133,7 +131,6 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
       setState(() {
         final info = 'onJoinChannel: $channel, uid: $uid';
         _infoStrings.add(info);
-        _user = uid;
       });
     };
 
@@ -175,13 +172,23 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
     };
   }
 
+  Future _joinChannel() async {
+    print('widget.channelName = ${widget.channelName}');
+    bool joinSuccess =
+        await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 1);
+    if (joinSuccess) {
+      setState(() {
+        _calling = false;
+      });
+    }
+  }
+
   /// Video layout wrapper
   Widget _viewRows() {
+    final localView = AgoraRenderWidget(0, local: true, preview: true);
     final remoteView = -1 != _user ? AgoraRenderWidget(_user) : null;
 
     print('_user = $_user');
-
-    final localView = AgoraRenderWidget(0, local: true, preview: true);
 
     return Stack(
       fit: StackFit.expand,
@@ -273,9 +280,6 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
             child: RawMaterialButton(
               onPressed: () {
                 _joinChannel();
-                setState(() {
-                  _calling = false;
-                });
               },
               child: Image.asset(
                 'assets/accept_call.png',

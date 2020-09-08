@@ -83,7 +83,7 @@ object ResolveHXMsg {
             when {
                 Msg.CMD_ACTION_VIDEO_CALL == body.action() -> {
                     message.setType(Msg.TYPE_VIDEO_CALL)
-                    val channel = cmdMsg.getStringAttribute("channel", null) ?: return null
+                    val channel = cmdMsg.getStringAttribute("channel", null)
                     message["channel"] = channel
                     Log.d("cmdMsg", "resolveCmdMsg: $channel")
                     return message

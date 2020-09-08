@@ -48,6 +48,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
         final arguments = call.arguments;
         final msg = msgFromMap(arguments);
 
+        // cmd_from_ 通知独立出来，可以使消息解析更高效
         if ('type_video_call_cancel' == msg.type) {
           bus.emit('cmd_from_${msg.from}', msg);
         } else if ('type_video_call_refuse' == msg.type) {
@@ -69,10 +70,11 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
               MaterialPageRoute(builder: (BuildContext context) {
             final arguments = call.arguments;
             final channel = arguments['channel'];
+            final username = arguments['username'];
             print('channel : $channel');
             return VideoCallSinglePage(
               channelName: channel,
-              username: arguments['username'],
+              username: username,
               isCaller: false,
             );
           }));

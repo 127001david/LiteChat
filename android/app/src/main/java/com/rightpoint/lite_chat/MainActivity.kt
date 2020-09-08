@@ -1,5 +1,6 @@
 package com.rightpoint.lite_chat
 
+import android.app.Instrumentation
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder

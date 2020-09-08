@@ -160,6 +160,7 @@ class MsgPageState extends State<MsgPageRoute>
                       reverse: true,
                       itemCount: _msgList.length,
                       physics: BouncingScrollPhysics(),
+                      padding: EdgeInsets.only(bottom: 12),
                       itemBuilder: (context, index) {
                         Msg msg = _msgList[index];
                         if (type_txt == msg.type) {
@@ -197,9 +198,14 @@ class MsgPageState extends State<MsgPageRoute>
                             return shareDataWidget;
                           }
                         }
-
-                        return ListTile(
-                          // title: Text(msg.type),
+                        return Container(
+                          child: Text(
+                            msg.type,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Color.fromARGB(255, 178, 178, 178)),
+                          ),
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) {

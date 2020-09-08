@@ -19,7 +19,7 @@ class HXResolveConversation : IResolveConversation {
             conversations.forEach { (username, emConversation) ->
                 val msg = ResolveHXMsg.resolveMsg(username, emConversation.lastMessage)
                 // 未读消息数
-                msg!!["unreadMsg"] = emConversation.unreadMsgCount
+                msg["unreadMsg"] = emConversation.unreadMsgCount
                 list.add(msg)
             }
             return list
