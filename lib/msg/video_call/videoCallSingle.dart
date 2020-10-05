@@ -1,6 +1,8 @@
 import 'dart:async';
 
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:agora_rtc_engine/rtc_engine.dart' hide Color;
+import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
+import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lite_chat/constant.dart';
@@ -30,6 +32,8 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
   static const channelCallNative =
       const MethodChannel(Constant.channel_send_msg);
 
+  RtcEngine rtcEngine;
+
   int _user = -1;
   final _infoStrings = <String>[];
   bool muted = false;
@@ -44,8 +48,11 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
     // clear users
     _user = -1;
     // destroy sdk
-    AgoraRtcEngine.leaveChannel();
-    AgoraRtcEngine.destroy();
+    if(null != rtcEngine) {
+      rtcEngine.leaveChannel();
+      rtcEngine.destroy();
+    }
+
     super.dispose();
   }
 
@@ -101,29 +108,27 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
       return;
     }
 
-    await AgoraRtcEngine.create(APP_ID);
+    rtcEngine = await RtcEngine.create(APP_ID);
     _addAgoraEventHandlers();
-    await AgoraRtcEngine.enableVideo();
-    await AgoraRtcEngine.setChannelProfile(ChannelProfile.Communication);
-    await AgoraRtcEngine.enableWebSdkInteroperability(true);
+    await rtcEngine.enableVideo();
+    await rtcEngine.setChannelProfile(ChannelProfile.Communication);
+    // await rtcEngine.enableWebSdkInteroperability(true);
     VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
     configuration.orientationMode = VideoOutputOrientationMode.FixedPortrait;
-    await AgoraRtcEngine.setVideoEncoderConfiguration(configuration);
-    if(widget.isCaller) {
-      await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 0);
+    await rtcEngine.setVideoEncoderConfiguration(configuration);
+    if (widget.isCaller) {
+      await rtcEngine.joinChannel(null, widget.channelName, null, 0);
     }
   }
 
   /// Add agora event handlers
   void _addAgoraEventHandlers() {
-    AgoraRtcEngine.onError = (dynamic code) {
+    rtcEngine.setEventHandler(RtcEngineEventHandler(error: (dynamic code) {
       setState(() {
         final info = 'onError: $code';
         _infoStrings.add(info);
       });
-    };
-
-    AgoraRtcEngine.onJoinChannelSuccess = (
+    }, joinChannelSuccess: (
       String channel,
       int uid,
       int elapsed,
@@ -131,25 +136,20 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
       setState(() {
         final info = 'onJoinChannel: $channel, uid: $uid';
         _infoStrings.add(info);
+        _calling = false;
       });
-    };
-
-    AgoraRtcEngine.onLeaveChannel = () {
+    }, leaveChannel: (leaveCallback) {
       setState(() {
         _infoStrings.add('onLeaveChannel');
         _user = -1;
       });
-    };
-
-    AgoraRtcEngine.onUserJoined = (int uid, int elapsed) {
+    }, userJoined: (int uid, int elapsed) {
       setState(() {
         final info = 'userJoined: $uid';
         _infoStrings.add(info);
         _user = uid;
       });
-    };
-
-    AgoraRtcEngine.onUserOffline = (int uid, int reason) {
+    }, userOffline: (int uid, UserOfflineReason reason) {
       setState(() {
         final info = 'userOffline: $uid';
         _infoStrings.add(info);
@@ -157,9 +157,7 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
       });
 
       _onCallEnd(context);
-    };
-
-    AgoraRtcEngine.onFirstRemoteVideoFrame = (
+    }, firstRemoteVideoFrame: (
       int uid,
       int width,
       int height,
@@ -169,24 +167,23 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
         final info = 'firstRemoteVideo: $uid ${width}x $height';
         _infoStrings.add(info);
       });
-    };
+    }));
   }
 
   Future _joinChannel() async {
     print('widget.channelName = ${widget.channelName}');
-    bool joinSuccess =
-        await AgoraRtcEngine.joinChannel(null, widget.channelName, null, 1);
-    if (joinSuccess) {
-      setState(() {
-        _calling = false;
-      });
-    }
+    await rtcEngine.joinChannel('', widget.channelName, '', 1);
   }
 
   /// Video layout wrapper
   Widget _viewRows() {
-    final localView = AgoraRenderWidget(0, local: true, preview: true);
-    final remoteView = -1 != _user ? AgoraRenderWidget(_user) : null;
+    final localView = RtcLocalView.TextureView();
+    final remoteView = -1 != _user
+        ? RtcRemoteView.TextureView(
+            uid: 1,
+            channelId: widget.channelName,
+          )
+        : null;
 
     print('_user = $_user');
 
@@ -412,10 +409,10 @@ class _VideoCallSingleState extends State<VideoCallSinglePage> {
     setState(() {
       muted = !muted;
     });
-    AgoraRtcEngine.muteLocalAudioStream(muted);
+    rtcEngine.muteLocalAudioStream(muted);
   }
 
   void _onSwitchCamera() {
-    AgoraRtcEngine.switchCamera();
+    rtcEngine.switchCamera();
   }
 }

@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage>
                     shape: BadgeShape.circle,
                     borderRadius: 100,
                     padding: EdgeInsets.all(6),
-                    position: BadgePosition.topRight(top: -3, right: -3),
+                    position: BadgePosition.topEnd(top: -3, end: -3),
                     child: Icon(Icons.chat_bubble),
                   ),
                   title: Text('轻聊')),

@@ -180,7 +180,7 @@ class ChatTabState extends BaseTabWidgetState<ChatTabWidget> {
                   showBadge: '' != unreadMsg,
                   borderRadius: 100,
                   padding: EdgeInsets.all(4),
-                  position: BadgePosition.topRight(top: 2, right: 8),
+                  position: BadgePosition.topEnd(top: 2, end: 8),
                   animationType: BadgeAnimationType.fade,
                   badgeContent: Text(unreadMsg,
                       style: TextStyle(

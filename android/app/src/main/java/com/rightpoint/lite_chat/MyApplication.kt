@@ -16,6 +16,7 @@ class MyApplication : FlutterApplication() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate: ")
+
         CrashReport.initCrashReport(applicationContext, "b7dc554861", false)
         val options = EMOptions()
         // 默认添加好友时，是不需要验证的，改成需要验证
